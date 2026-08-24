@@ -1,7 +1,16 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
+import { RouterView } from 'vue-router'
 </script>
 
 <template>
-  <HelloWorld />
+  <div id="app">
+    <RouterView />
+  </div>
 </template>
+
+<style>
+#app {
+  font-family: system-ui, -apple-system, sans-serif;
+  color: #111827;
+}
+</style>
