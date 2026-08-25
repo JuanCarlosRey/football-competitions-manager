@@ -1,1 +1,20 @@
-node_modules
+node_modules/
+.env
+.env.*
+!.env.example
+dist/
+build/
+coverage/
+playwright-report/
+test-results/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
+
+# Playwright
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/

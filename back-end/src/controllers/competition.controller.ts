@@ -51,11 +51,12 @@ export async function updateCompetition(req: Request, res: Response) {
         const { name, organization } = req.body;
         const updatedCompetition = await competitionService.update(id, { name, organization });
         res.json(updatedCompetition);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error(error);
-        if (error.code === 'P2025') {
+        if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'P2025') {
             return res.status(404).json({ error: 'Competition not found' });
         }
+        
         res.status(500).json({ error: 'Error updating competition' });
     }
 }
@@ -68,9 +69,9 @@ export async function deleteCompetition(req: Request, res: Response) {
         }
         await competitionService.deleteCompetition(id);
         res.status(204).send();
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error(error);
-        if (error.code === 'P2025') {
+        if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'P2025') {
             return res.status(404).json({ error: 'Competition not found' });
         }
         res.status(500).json({ error: 'Error deleting competition' });
