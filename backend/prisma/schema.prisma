@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,38 +6,63 @@ datasource db {
   provider = "postgresql"
 }
 
+model Organization {
+  id           Int           @id @default(autoincrement())
+  name         String
+  competitions Competition[]
+}
+
 model Competition {
-  id       Int      @id @default(autoincrement())
-  name     String
-  organization  String?
-  seasons  Season[]
+  id             Int          @id @default(autoincrement())
+  name           String
+  organizationId Int
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  seasons        Season[]
 }
 
 model Season {
-  id            Int         @id @default(autoincrement())
-  name          String
+  id            Int      @id @default(autoincrement())
+  startDate     DateTime
+  endDate       DateTime
   competitionId Int
   competition   Competition @relation(fields: [competitionId], references: [id])
-  matches       Match[]
+  matches Match[]
 }
 
 model Team {
-  id             Int     @id @default(autoincrement())
-  name           String
-  shortName      String?
-  homeMatches    Match[] @relation("HomeTeam")
-  awayMatches    Match[] @relation("AwayTeam")
+  id           Int     @id @default(autoincrement())
+  name         String
+  abbreviation String
+  crest        String?
+  president    String?
+  homeMatches Match[] @relation("HomeTeam")
+  awayMatches Match[] @relation("AwayTeam")
+}
+
+model Stadium {
+  id       Int    @id @default(autoincrement())
+  name     String
+  capacity Int
+  address  String
+  matches Match[]
 }
 
 model Match {
-  id          Int      @id @default(autoincrement())
-  date        DateTime
-  homeScore   Int
-  awayScore   Int
-  seasonId    Int
-  season      Season   @relation(fields: [seasonId], references: [id])
-  homeTeamId  Int
-  homeTeam    Team     @relation("HomeTeam", fields: [homeTeamId], references: [id])
-  awayTeamId  Int
-  awayTeam    Team     @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  id       Int         @id @default(autoincrement())
+  dateTime DateTime
+  status   MatchStatus
+  seasonId  Int
+  stadiumId Int
+  homeTeamId Int
+  awayTeamId Int
+  season  Season  @relation(fields: [seasonId], references: [id])
+  stadium Stadium @relation(fields: [stadiumId], references: [id])
+  homeTeam Team @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeam Team @relation("AwayTeam", fields: [awayTeamId], references: [id])
+}
+
+enum MatchStatus {
+  SCHEDULED
+  LIVE
+  FINISHED
 }
