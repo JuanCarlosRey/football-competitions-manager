@@ -13,7 +13,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   backend:
-    image: <DOCKERHUB_USER_NAME>/football-competitions-manager:backend-latest
+    image: juancarlosreymedina2002/football-competitions-manager:backend-latest
     container_name: football-backend
     restart: unless-stopped
     ports:
@@ -24,7 +24,7 @@ services:
       - postgres
 
   frontend:
-    image: <DOCKERHUB_USER_NAME>/football-competitions-manager:frontend-latest
+    image: juancarlosreymedina2002/football-competitions-manager:frontend-latest
     container_name: football-frontend
     restart: unless-stopped
     ports:
