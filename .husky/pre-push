@@ -1,0 +1,28 @@
+#!/bin/sh
+echo "🧪 Executing test suite before push..."
+
+# 1. Pruebas Backend
+echo "-> Executing Backend tests..."
+cd backend && npm run test && cd ..
+if [ $? -ne 0 ]; then
+    echo "❌ Failed Backend tests. Canceling push."
+    exit 1
+fi
+
+# 2. Pruebas Frontend
+echo "-> Executing Frontend tests..."
+cd frontend && npm run test && cd ..
+if [ $? -ne 0 ]; then
+    echo "❌ Failed Frontend tests. Canceling push."
+    exit 1
+fi
+
+# 3. Pruebas E2E (Playwright)
+echo "-> Executing E2E tests with Playwright..."
+npm run test:e2e
+if [ $? -ne 0 ]; then
+    echo "❌ Failed E2E tests with Playwright. Canceling push."
+    exit 1
+fi
+
+echo "🚀 All tests passed successfully. Pushing changes to GitHub..."

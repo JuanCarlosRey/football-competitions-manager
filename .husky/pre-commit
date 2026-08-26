@@ -1,1 +1,10 @@
-#npm test
+#!/bin/sh
+echo "🔍 Executing static checks (Linter and Types)..."
+
+echo "-> Linter and type checking in Backend"
+cd backend && npm run lint && cd .. || exit 1
+
+echo "-> Linter and type checking in Frontend"
+cd frontend && npm run lint && cd .. || exit 1
+
+echo "✅ Correct format and syntax."
