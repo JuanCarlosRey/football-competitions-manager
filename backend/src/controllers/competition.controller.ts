@@ -30,11 +30,11 @@ export async function getCompetitionById(req: Request, res: Response) {
 
 export async function createCompetition(req: Request, res: Response) {
     try {
-        const { name, organization } = req.body;
+        const { name, organizationId } = req.body;
         if (!name || typeof name !== 'string') {
             return res.status(400).json({ error: 'Field "name" is required and must be a string' });
         }
-        const newCompetition = await competitionService.create({ name, organization });
+        const newCompetition = await competitionService.create({ name, organizationId });
         res.status(201).json(newCompetition);
     } catch (error) {
         console.error(error);
@@ -48,8 +48,8 @@ export async function updateCompetition(req: Request, res: Response) {
         if (isNaN(id)) {
             return res.status(400).json({ error: 'Invalid competition ID' });
         }
-        const { name, organization } = req.body;
-        const updatedCompetition = await competitionService.update(id, { name, organization });
+        const { name, organizationId } = req.body;
+        const updatedCompetition = await competitionService.update(id, { name, organizationId });
         res.json(updatedCompetition);
     } catch (error: unknown) {
         console.error(error);
