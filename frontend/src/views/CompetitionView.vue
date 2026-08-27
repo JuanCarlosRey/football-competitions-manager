@@ -73,7 +73,7 @@
 
 <script setup lang="ts">
 import { onMounted } from "vue";
-import { useCompetitionStore } from "../stores/competitionStore";
+import { useCompetitionStore } from "../stores/competition.store";
 
 const store = useCompetitionStore();
 

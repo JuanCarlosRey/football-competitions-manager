@@ -12,8 +12,9 @@ export const useCompetitionStore = defineStore("competition", () => {
         loading.value = true;
         error.value = null;
         try {
-            competitions.value = await getCompetitions();
-        } catch (err) {
+            const response = await getCompetitions();
+            competitions.value = response.data ?? [];
+        } catch (err: unknown) {
             console.error(err);
             error.value = "Error al cargar las competiciones";
         } finally {
