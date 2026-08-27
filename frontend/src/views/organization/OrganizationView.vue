@@ -58,7 +58,7 @@
 <script setup lang="ts">
 import { onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { useOrganizationStore } from "../stores/organization.store";
+import { useOrganizationStore } from "../../stores/organization.store";
 
 const orgStore = useOrganizationStore();
 const router = useRouter();

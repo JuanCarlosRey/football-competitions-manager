@@ -197,7 +197,7 @@ input.input-error {
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { useOrganizationStore } from "../stores/organization.store";
+import { useOrganizationStore } from "../../stores/organization.store";
 
 const route = useRoute();
 const router = useRouter();

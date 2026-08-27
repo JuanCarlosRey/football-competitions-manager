@@ -1,6 +1,5 @@
-import { PrismaClient, type Organization, Prisma } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { type Organization, Prisma } from '@prisma/client';
+import { prisma } from '../config/prisma.js';
 
 export async function getAll(): Promise<Organization[]> {
     return prisma.organization.findMany({
