@@ -48,7 +48,10 @@ describe('Competition Service', () => {
             ] as never);
             const result = await getAll();
             expect(mockPrisma.competition.findMany).toHaveBeenCalledWith({
-                include: { organization: true },
+                include: { 
+                    organization: true,
+                    seasons: true
+                },
             });
             expect(result).toEqual([mockCompetitionWithRelations]);
         });

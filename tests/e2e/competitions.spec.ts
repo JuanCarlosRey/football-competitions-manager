@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Competition flow', () => {
-    test('debe permitir completar el flujo CRUD de una competición utilizando mocks', async ({ page }) => {
+    test('should allow completing the full CRUD flow for a competition using mocks', async ({ page }) => {
         let competitions = [
             {
                 id: 1,

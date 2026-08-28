@@ -5,6 +5,7 @@ export async function getAll() {
     return prisma.competition.findMany({
         include: {
             organization: true,
+            seasons: true,
         },
     });
 }
