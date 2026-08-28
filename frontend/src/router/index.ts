@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
-import CompetitionsView from "../views/CompetitionView.vue";
+import CompetitionsView from "../views/competition/CompetitionView.vue";
+import CompetitionForm from "../views/competition/CompetitionForm.vue"
 import OrganizationView from "../views/organization/OrganizationView.vue";
 import OrganizationForm from "../views/organization/OrganizationForm.vue";
 
@@ -14,6 +15,16 @@ const router = createRouter({
             path: "/competitions",
             name: "competitions",
             component: CompetitionsView,
+        },
+        {
+            path: "/competitions/new",
+            name: "competition-create",
+            component: () => CompetitionForm,
+        },
+        {
+            path: "/competitions/:id/edit",
+            name: "competition-edit",
+            component: () => CompetitionForm,
         },
         {
             path: "/organizations",
