@@ -2,25 +2,25 @@ import { jest, describe, beforeEach, it, expect } from '@jest/globals';
 import type { Organization, Prisma } from '@prisma/client';
 
 const mockPrisma = {
-  organization: {
-    findMany: jest.fn(),
-    findUnique: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn(),
-  },
+    organization: {
+        findMany: jest.fn(),
+        findUnique: jest.fn(),
+        create: jest.fn(),
+        update: jest.fn(),
+        delete: jest.fn(),
+    },
 };
 
 jest.unstable_mockModule('../../src/config/prisma.js', () => ({
-  prisma: mockPrisma,
+    prisma: mockPrisma,
 }));
 
 const {
-  getAll,
-  getById,
-  create,
-  update,
-  deleteOrganization,
+    getAll,
+    getById,
+    create,
+    update,
+    deleteOrganization,
 } = await import('../../src/services/organization.service.js');
 
 describe('Organization Service', () => {
