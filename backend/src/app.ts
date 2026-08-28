@@ -2,6 +2,7 @@ import express from "express";
 import cors from 'cors';
 import competitionRoutes from './routes/competition.routes.js';
 import organizationRoutes from "./routes/organization.routes.js";
+import seasonRoutes from "./routes/season.routes.js";
 
 const app = express();
 
@@ -26,5 +27,6 @@ app.use(express.json());
 
 app.use('/api/organizations', organizationRoutes);
 app.use('/api/competitions', competitionRoutes);
+app.use('/api/seasons', seasonRoutes);
 
 export default app;
