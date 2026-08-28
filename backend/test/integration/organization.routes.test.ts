@@ -37,7 +37,7 @@ const mockOrganizationWithCompetitions = {
 
 const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
-describe('Organization Routes (Integration)', () => {
+describe('Organization Routes', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         consoleErrorSpy.mockClear();
@@ -48,7 +48,7 @@ describe('Organization Routes (Integration)', () => {
     });
 
     describe('GET /organizations', () => {
-        it('debería devolver 200 y la lista de organizaciones', async () => {
+        it('should return all organizations including their competitions', async () => {
             mockOrganizationService.getAll.mockResolvedValue([
                 mockOrganizationWithCompetitions,
             ] as never);
@@ -64,7 +64,7 @@ describe('Organization Routes (Integration)', () => {
             expect(mockOrganizationService.getAll).toHaveBeenCalledTimes(1);
         });
 
-        it('debería devolver 500 si el servicio falla', async () => {
+        it('should return 500 if the service fails', async () => {
             mockOrganizationService.getAll.mockRejectedValue(new Error('DB error') as never);
             const res = await request(app).get('/organizations');
             expect(res.status).toBe(500);
@@ -73,7 +73,7 @@ describe('Organization Routes (Integration)', () => {
     });
 
     describe('GET /organizations/:id', () => {
-        it('debería devolver 200 y la organización si existe', async () => {
+        it('should return the organization if it exists', async () => {
             mockOrganizationService.getById.mockResolvedValue(
                 mockOrganizationWithCompetitions as never
             );
@@ -84,21 +84,21 @@ describe('Organization Routes (Integration)', () => {
             expect(mockOrganizationService.getById).toHaveBeenCalledWith(1);
         });
 
-        it('debería devolver 400 si el id no es un número', async () => {
+        it('should return 400 if the id is not a number', async () => {
             const res = await request(app).get('/organizations/abc');
             expect(res.status).toBe(400);
             expect(res.body).toEqual({ error: 'Invalid organization ID' });
             expect(mockOrganizationService.getById).not.toHaveBeenCalled();
         });
 
-        it('debería devolver 404 si la organización no existe', async () => {
+        it('should return 404 if the organization does not exist', async () => {
             mockOrganizationService.getById.mockResolvedValue(null as never);
             const res = await request(app).get('/organizations/999');
             expect(res.status).toBe(404);
             expect(res.body).toEqual({ error: 'Organization not found' });
         });
 
-        it('debería devolver 500 si el servicio falla', async () => {
+        it('should return 500 if the service fails', async () => {
             mockOrganizationService.getById.mockRejectedValue(new Error('DB error') as never);
             const res = await request(app).get('/organizations/1');
             expect(res.status).toBe(500);
@@ -107,7 +107,7 @@ describe('Organization Routes (Integration)', () => {
     });
 
     describe('POST /organizations', () => {
-        it('debería devolver 201 y la organización creada', async () => {
+        it('should return 201 and the created organization', async () => {
             const input = { name: 'Premier League' };
             const created = { ...mockOrganization, id: 2, name: 'Premier League' };
             mockOrganizationService.create.mockResolvedValue(created as never);
@@ -119,7 +119,7 @@ describe('Organization Routes (Integration)', () => {
             expect(mockOrganizationService.create).toHaveBeenCalledWith(input);
         });
 
-        it('debería devolver 400 si los datos no son válidos (Zod)', async () => {
+        it('should return 400 if the data is invalid (Zod)', async () => {
             const res = await request(app)
                 .post('/organizations')
                 .send({});
@@ -128,7 +128,7 @@ describe('Organization Routes (Integration)', () => {
             expect(mockOrganizationService.create).not.toHaveBeenCalled();
         });
 
-        it('debería devolver 500 si el servicio falla', async () => {
+        it('should return 500 if the service fails', async () => {
             mockOrganizationService.create.mockRejectedValue(new Error('DB error') as never);
             const res = await request(app)
                 .post('/organizations')
@@ -139,7 +139,7 @@ describe('Organization Routes (Integration)', () => {
     });
 
     describe('PUT /organizations/:id', () => {
-        it('debería devolver 200 y la organización actualizada', async () => {
+        it('should return 200 and the updated organization', async () => {
             const updated = { ...mockOrganization, name: 'LaLiga EA Sports' };
             mockOrganizationService.update.mockResolvedValue(updated as never);
             const res = await request(app)
@@ -152,7 +152,7 @@ describe('Organization Routes (Integration)', () => {
             });
         });
 
-        it('debería devolver 400 si el id no es válido', async () => {
+        it('should return 400 if the id is not valid', async () => {
             const res = await request(app)
                 .put('/organizations/abc')
                 .send({ name: 'Test' });
@@ -160,7 +160,7 @@ describe('Organization Routes (Integration)', () => {
             expect(res.body).toEqual({ error: 'Invalid organization ID' });
         });
 
-        it('debería devolver 404 si la organización no existe (P2025)', async () => {
+        it('should return 404 if the organization does not exist (P2025)', async () => {
             const prismaError = { code: 'P2025' };
             mockOrganizationService.update.mockRejectedValue(prismaError as never);
             const res = await request(app)
@@ -170,7 +170,7 @@ describe('Organization Routes (Integration)', () => {
             expect(res.body).toEqual({ error: 'Organization not found' });
         });
 
-        it('debería devolver 500 en otros errores', async () => {
+        it('should return 500 if the service fails', async () => {
             mockOrganizationService.update.mockRejectedValue(new Error('DB error') as never);
             const res = await request(app)
                 .put('/organizations/1')
@@ -181,7 +181,7 @@ describe('Organization Routes (Integration)', () => {
     });
 
     describe('DELETE /organizations/:id', () => {
-        it('debería devolver 204 al eliminar correctamente', async () => {
+        it('should return 204 when deleting successfully', async () => {
             mockOrganizationService.deleteOrganization.mockResolvedValue(
                 mockOrganization as never
             );
@@ -191,13 +191,13 @@ describe('Organization Routes (Integration)', () => {
             expect(mockOrganizationService.deleteOrganization).toHaveBeenCalledWith(1);
         });
 
-        it('debería devolver 400 si el id no es válido', async () => {
+        it('should return 400 if the id is not valid', async () => {
             const res = await request(app).delete('/organizations/abc');
             expect(res.status).toBe(400);
             expect(res.body).toEqual({ error: 'Invalid organization ID' });
         });
 
-        it('debería devolver 404 si la organización no existe (P2025)', async () => {
+        it('should return 404 if the organization does not exist (P2025)', async () => {
             const prismaError = { code: 'P2025' };
             mockOrganizationService.deleteOrganization.mockRejectedValue(prismaError as never);
             const res = await request(app).delete('/organizations/999');
@@ -205,7 +205,7 @@ describe('Organization Routes (Integration)', () => {
             expect(res.body).toEqual({ error: 'Organization not found' });
         });
 
-        it('debería devolver 500 en otros errores', async () => {
+        it('should return 500 if the service fails', async () => {
             mockOrganizationService.deleteOrganization.mockRejectedValue(
                 new Error('DB error') as never
             );

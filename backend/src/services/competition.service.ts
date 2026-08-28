@@ -1,4 +1,5 @@
 import { prisma } from '../config/prisma.js';
+import type { CreateCompetitionDTO, UpdateCompetitionDTO } from '../schemas/competition.schema.js';
 
 export async function getAll() {
     return prisma.competition.findMany({
@@ -13,11 +14,12 @@ export async function getById(id: number) {
         where: { id },
         include: {
             organization: true,
+            seasons: true,
         },
     });
 }
 
-export async function create(data: { name: string; organizationId: number }) {
+export async function create(data: CreateCompetitionDTO) {
     return prisma.competition.create({
         data: {
             name: data.name,
@@ -26,10 +28,7 @@ export async function create(data: { name: string; organizationId: number }) {
     });
 }
 
-export async function update(
-    id: number,
-    data: { name?: string; organizationId?: number }
-) {
+export async function update(id: number, data: UpdateCompetitionDTO) {
     return prisma.competition.update({
         where: { id },
         data: {

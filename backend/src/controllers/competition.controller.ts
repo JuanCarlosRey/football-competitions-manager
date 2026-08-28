@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 import * as competitionService from '../services/competition.service.js';
+import { createCompetitionSchema, updateCompetitionSchema } from '../schemas/competition.schema.js';
 
 export async function getCompetitions(req: Request, res: Response) {
     try {
@@ -30,14 +31,17 @@ export async function getCompetitionById(req: Request, res: Response) {
 
 export async function createCompetition(req: Request, res: Response) {
     try {
-        const { name, organizationId } = req.body;
-        if (!name || typeof name !== 'string') {
-            return res.status(400).json({ error: 'Field "name" is required and must be a string' });
+        const validation = createCompetitionSchema.safeParse(req.body);
+        if (!validation.success) {
+            return res.status(400).json({ error: validation.error.issues[0].message });
         }
-        const newCompetition = await competitionService.create({ name, organizationId });
+        const newCompetition = await competitionService.create(validation.data);
         res.status(201).json(newCompetition);
-    } catch (error) {
+    } catch (error: unknown) {
         console.error(error);
+        if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'P2003') {
+            return res.status(400).json({ error: 'The specified organizationId does not exist' });
+        }
         res.status(500).json({ error: 'Error creating competition' });
     }
 }
@@ -48,15 +52,22 @@ export async function updateCompetition(req: Request, res: Response) {
         if (isNaN(id)) {
             return res.status(400).json({ error: 'Invalid competition ID' });
         }
-        const { name, organizationId } = req.body;
-        const updatedCompetition = await competitionService.update(id, { name, organizationId });
+        const validation = updateCompetitionSchema.safeParse(req.body);
+        if (!validation.success) {
+            return res.status(400).json({ error: validation.error.issues[0].message });
+        }
+        const updatedCompetition = await competitionService.update(id, validation.data);
         res.json(updatedCompetition);
     } catch (error: unknown) {
         console.error(error);
-        if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'P2025') {
-            return res.status(404).json({ error: 'Competition not found' });
+        if (typeof error === 'object' && error !== null && 'code' in error) {
+            if (error.code === 'P2025') {
+                return res.status(404).json({ error: 'Competition not found' });
+            }
+            if (error.code === 'P2003') {
+                return res.status(400).json({ error: 'The specified organizationId does not exist' });
+            }
         }
-        
         res.status(500).json({ error: 'Error updating competition' });
     }
 }

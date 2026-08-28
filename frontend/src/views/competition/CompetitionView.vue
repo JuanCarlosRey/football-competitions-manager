@@ -1,49 +1,55 @@
 <template>
-  <div class="organization-container">
+  <div class="competition-container">
     <header class="header">
-      <h1>Organizaciones</h1>
-      <button class="btn btn-primary" @click="handleCreate">+ Nueva Organización</button>
+      <h1>Competiciones</h1>
+      <button class="btn btn-primary" @click="handleCreate">+ Nueva Competición</button>
     </header>
-    <div v-if="orgStore.error" class="alert alert-danger">
-      <span>{{ orgStore.error }}</span>
-      <button class="btn-close" @click="orgStore.clearError()">✕</button>
+    <div v-if="competitionStore.error" class="alert alert-danger">
+      <span>{{ competitionStore.error }}</span>
+      <button class="btn-close" @click="competitionStore.clearError()">✕</button>
     </div>
-    <div v-if="orgStore.isLoading" class="loading-state">
+    <div v-if="competitionStore.isLoading" class="loading-state">
       <div class="spinner"></div>
-      <p>Cargando organizaciones...</p>
+      <p>Cargando competiciones...</p>
     </div>
     <div
-      v-else-if="!orgStore.isLoading && orgStore.organizations.length === 0"
+      v-else-if="
+        !competitionStore.isLoading && competitionStore.competitions.length === 0
+      "
       class="empty-state"
     >
-      <p>No hay organizaciones registradas.</p>
+      <p>No hay competiciones registradas.</p>
     </div>
     <div v-else class="table-container">
-      <table class="org-table">
+      <table class="competition-table">
         <thead>
           <tr>
             <th>ID</th>
             <th>Nombre</th>
-            <th>Competiciones</th>
+            <th>Organización</th>
+            <th>Temporadas</th>
             <th class="text-right">Acciones</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="org in orgStore.organizations" :key="org.id">
-            <td>{{ org.id }}</td>
-            <td class="font-bold">{{ org.name }}</td>
+          <tr v-for="comp in competitionStore.competitions" :key="comp.id">
+            <td>{{ comp.id }}</td>
+            <td class="font-bold">{{ comp.name }}</td>
             <td>
-              <span class="badge">
-                {{ org.competitions?.length || 0 }} competiciones
+              <span class="organization-name">
+                {{ comp.organization?.name || `ID Org: ${comp.organizationId}` }}
               </span>
             </td>
+            <td>
+              <span class="badge"> {{ comp.seasons?.length || 0 }} temporadas </span>
+            </td>
             <td class="text-right actions">
-              <button class="btn btn-sm btn-secondary" @click="handleEdit(org.id)">
+              <button class="btn btn-sm btn-secondary" @click="handleEdit(comp.id)">
                 Editar
               </button>
               <button
                 class="btn btn-sm btn-danger"
-                @click="confirmDelete(org.id, org.name)"
+                @click="confirmDelete(comp.id, comp.name)"
               >
                 Eliminar
               </button>
@@ -56,7 +62,7 @@
 </template>
 
 <style scoped>
-.organization-container {
+.competition-container {
   max-width: 1000px;
   margin: 0 auto;
   padding: 2rem 1rem;
@@ -76,19 +82,19 @@
   overflow: hidden;
 }
 
-.org-table {
+.competition-table {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
 }
 
-.org-table th,
-.org-table td {
+.competition-table th,
+.competition-table td {
   padding: 1rem;
   border-bottom: 1px solid #e5e7eb;
 }
 
-.org-table th {
+.competition-table th {
   background-color: #f9fafb;
   font-weight: 600;
   color: #374151;
@@ -96,6 +102,11 @@
 
 .font-bold {
   font-weight: 600;
+}
+
+.organization-name {
+  color: #4b5563;
+  font-weight: 500;
 }
 
 .text-right {
@@ -207,29 +218,29 @@
 <script setup lang="ts">
 import { onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { useOrganizationStore } from "../../stores/organization.store";
+import { useCompetitionStore } from "../../stores/competition.store";
 
-const orgStore = useOrganizationStore();
+const competitionStore = useCompetitionStore();
 const router = useRouter();
 
 onMounted(() => {
-  orgStore.fetchOrganizations();
+  competitionStore.fetchCompetitions();
 });
 
 const handleCreate = () => {
-  router.push("/organizations/new");
+  router.push("/competitions/new");
 };
 
 const handleEdit = (id: number) => {
-  router.push(`/organizations/${id}/edit`);
+  router.push(`/competitions/${id}/edit`);
 };
 
 const confirmDelete = async (id: number, name: string) => {
-  if (confirm(`¿Estás seguro de que deseas eliminar la organización "${name}"?`)) {
+  if (confirm(`¿Estás seguro de que deseas eliminar la competición "${name}"?`)) {
     try {
-      await orgStore.deleteOrganization(id);
+      await competitionStore.deleteCompetition(id);
     } catch {
-      // El mensaje de error ya se captura e imprime automáticamente en el store
+      // El mensaje de error ya se captura e imprime automáticamente en la store
     }
   }
 };
