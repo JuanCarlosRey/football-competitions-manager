@@ -3,6 +3,8 @@ import CompetitionsView from "../views/competition/CompetitionView.vue";
 import CompetitionForm from "../views/competition/CompetitionForm.vue"
 import OrganizationView from "../views/organization/OrganizationView.vue";
 import OrganizationForm from "../views/organization/OrganizationForm.vue";
+import SeasonView from "../views/season/SeasonView.vue";
+import SeasonForm from "../views/season/SeasonForm.vue";
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -40,6 +42,21 @@ const router = createRouter({
             path: "/organizations/:id/edit",
             name: "organization-edit",
             component: OrganizationForm,
+        },
+                {
+            path: "/seasons",
+            name: "seasons",
+            component: SeasonView,
+        },
+        {
+            path: "/seasons/new",
+            name: "season-create",
+            component: SeasonForm,
+        },
+        {
+            path: "/seasons/:id/edit",
+            name: "season-edit",
+            component: SeasonForm,
         },
     ],
 });

@@ -1,11 +1,12 @@
 import type { Organization } from './organization';
+import type { Season } from './season';
 
 export interface Competition {
   id: number;
   name: string;
   organizationId: number;
   organization?: Organization;
-  seasons?: unknown[];
+  seasons?: Season[];
 }
 
 export interface CreateCompetitionDTO {
