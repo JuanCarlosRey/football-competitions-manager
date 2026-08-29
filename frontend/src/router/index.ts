@@ -5,6 +5,8 @@ import OrganizationView from "../views/organization/OrganizationView.vue";
 import OrganizationForm from "../views/organization/OrganizationForm.vue";
 import SeasonView from "../views/season/SeasonView.vue";
 import SeasonForm from "../views/season/SeasonForm.vue";
+import TeamView from "../views/team/TeamView.vue";
+import TeamForm from "../views/team/TeamForm.vue";
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -43,7 +45,7 @@ const router = createRouter({
             name: "organization-edit",
             component: OrganizationForm,
         },
-                {
+        {
             path: "/seasons",
             name: "seasons",
             component: SeasonView,
@@ -57,6 +59,21 @@ const router = createRouter({
             path: "/seasons/:id/edit",
             name: "season-edit",
             component: SeasonForm,
+        },
+        {
+            path: "/teams",
+            name: "teams",
+            component: TeamView,
+        },
+        {
+            path: "/teams/new",
+            name: "team-create",
+            component: TeamForm,
+        },
+        {
+            path: "/teams/:id/edit",
+            name: "team-edit",
+            component: TeamForm,
         },
     ],
 });
