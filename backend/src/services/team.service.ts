@@ -33,7 +33,7 @@ export async function update(id: number, data: Prisma.TeamUpdateInput): Promise<
     });
 }
 
-export async function remove(id: number): Promise<Team> {
+export async function deleteTeam(id: number): Promise<Team> {
     return prisma.team.delete({
         where: { id },
     });

@@ -71,7 +71,7 @@ export async function deleteTeam(req: Request, res: Response) {
         if (isNaN(id)) {
             return res.status(400).json({ error: 'Invalid team ID' });
         }
-        await teamService.remove(id);
+        await teamService.deleteTeam(id);
         res.status(204).send();
     } catch (error: unknown) {
         console.error(error);
