@@ -7,6 +7,8 @@ import SeasonView from "../views/season/SeasonView.vue";
 import SeasonForm from "../views/season/SeasonForm.vue";
 import TeamView from "../views/team/TeamView.vue";
 import TeamForm from "../views/team/TeamForm.vue";
+import StadiumView from "../views/stadium/StadiumView.vue";
+import StadiumForm from "../views/stadium/StadiumForm.vue";
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -75,6 +77,21 @@ const router = createRouter({
             name: "team-edit",
             component: TeamForm,
         },
+        {
+            path: "/stadiums",
+            name: "stadiums",
+            component: StadiumView,
+        },
+        {
+            path: "/stadiums/new",
+            name: "stadium-create",
+            component: StadiumForm,
+        },
+        {
+            path: "/stadiums/:id/edit",
+            name: "stadium-edit",
+            component: StadiumForm,
+        }
     ],
 });
 
