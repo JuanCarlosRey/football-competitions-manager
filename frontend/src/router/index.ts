@@ -9,6 +9,8 @@ import TeamView from "../views/team/TeamView.vue";
 import TeamForm from "../views/team/TeamForm.vue";
 import StadiumView from "../views/stadium/StadiumView.vue";
 import StadiumForm from "../views/stadium/StadiumForm.vue";
+import MatchView from "../views/match/MatchView.vue";
+import MatchForm from "../views/match/MatchForm.vue";
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -91,6 +93,21 @@ const router = createRouter({
             path: "/stadiums/:id/edit",
             name: "stadium-edit",
             component: StadiumForm,
+        },
+        {
+            path: "/matches",
+            name: "matches",
+            component: MatchView,
+        },
+        {
+            path: "/matches/new",
+            name: "match-create",
+            component: MatchForm,
+        },
+        {
+            path: "/matches/:id/edit",
+            name: "match-edit",
+            component: MatchForm,
         }
     ],
 });

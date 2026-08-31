@@ -1,11 +1,13 @@
+import type { Match } from "./match";
+
 export interface Team {
     id: number;
     name: string;
     abbreviation: string;
     crest?: string | null;
     president?: string | null;
-    homeMatches?: Array<unknown>;
-    awayMatches?: Array<unknown>;
+    homeMatches?: Array<Match>;
+    awayMatches?: Array<Match>;
 }
 
 export interface CreateTeamDTO {

@@ -1,9 +1,11 @@
+import type { Match } from "./match";
+
 export interface Stadium {
     id: number;
     name: string;
     capacity: number;
     address: string;
-    matches?: Array<unknown>;
+    matches?: Array<Match>;
 }
 
 export interface CreateStadiumDTO {
