@@ -5,6 +5,7 @@ import organizationRoutes from "./routes/organization.routes.js";
 import seasonRoutes from "./routes/season.routes.js";
 import teamRoutes from "./routes/team.routes.js";
 import stadiumRoutes from "./routes/stadium.routes.js";
+import matchRoutes from "./routes/match.routes.js";
 
 const app = express();
 
@@ -32,5 +33,6 @@ app.use('/api/competitions', competitionRoutes);
 app.use('/api/seasons', seasonRoutes);
 app.use('/api/teams', teamRoutes);
 app.use('/api/stadiums', stadiumRoutes);
+app.use('/api/matches', matchRoutes);
 
 export default app;

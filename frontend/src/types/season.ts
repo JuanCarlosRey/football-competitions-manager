@@ -1,3 +1,5 @@
+import type { Match } from "./match";
+
 export interface Season {
     id: number;
     startDate: string;
@@ -8,7 +10,7 @@ export interface Season {
         name: string;
         organizationId: number;
     };
-    matches?: Array<unknown>;
+    matches?: Array<Match>;
 }
 
 export interface CreateSeasonDTO {
