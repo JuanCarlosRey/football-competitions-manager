@@ -84,7 +84,13 @@ test.describe('Organization flow', () => {
     await expect(page).toHaveURL('/organizations');
     const createdRow = page.getByRole('row', { name: uniqueOrgName });
     await expect(createdRow).toBeVisible();
-    await createdRow.getByRole('button', { name: 'Editar' }).click();
+    await createdRow.getByRole('button', { name: 'Ver' }).click();
+    await expect(page).toHaveURL(/\/organizations\/\d+\/info/);
+    await expect(page.getByRole('heading', { name: uniqueOrgName })).toBeVisible();
+    await expect(page.getByText('Información General')).toBeVisible();
+    await expect(page.getByText('Competiciones Asociadas')).toBeVisible();
+    await expect(page.getByText('Esta organización no tiene competiciones registradas.')).toBeVisible();
+    await page.getByRole('button', { name: 'Editar' }).click();
     await expect(page).toHaveURL(/\/organizations\/\d+\/edit/);
     await expect(page.getByRole('heading', { name: 'Editar Organización' })).toBeVisible();
     await page.getByLabel('Nombre de la Organización *').fill(updatedOrgName);

@@ -46,6 +46,10 @@
               <span class="badge"> {{ season.matches?.length || 0 }} partidos </span>
             </td>
             <td class="text-right actions">
+              <!-- Botón para ver la información detallada -->
+              <button class="btn btn-sm btn-info" @click="handleView(season.id)">
+                Ver
+              </button>
               <button class="btn btn-sm btn-secondary" @click="handleEdit(season.id)">
                 Editar
               </button>
@@ -133,6 +137,14 @@
 }
 .btn-primary:hover {
   background-color: #1d4ed8;
+}
+
+.btn-info {
+  background-color: #0ea5e9;
+  color: white;
+}
+.btn-info:hover {
+  background-color: #0284c7;
 }
 
 .btn-secondary {
@@ -228,6 +240,10 @@ onMounted(() => {
 
 const handleCreate = () => {
   router.push("/seasons/new");
+};
+
+const handleView = (id: number) => {
+  router.push(`/seasons/${id}/info`);
 };
 
 const handleEdit = (id: number) => {

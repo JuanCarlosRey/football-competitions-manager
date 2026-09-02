@@ -109,7 +109,16 @@ test.describe('Competition flow', () => {
         const createdRow = page.getByRole('row', { name: uniqueCompName });
         await expect(createdRow).toBeVisible();
         await expect(createdRow).toContainText('Organización A');
-        await createdRow.getByRole('button', { name: 'Editar' }).click();
+        await createdRow.getByRole('button', { name: 'Ver' }).click();
+        await expect(page).toHaveURL(/\/competitions\/\d+\/info/);
+        await expect(page.getByRole('heading', { name: uniqueCompName })).toBeVisible();
+        await expect(page.getByText('Información General')).toBeVisible();
+        await expect(page.getByText('Organización A')).toBeVisible();
+        await page.getByRole('button', { name: '← Volver' }).click();
+        await expect(page).toHaveURL('/competitions');
+        await page.getByRole('row', { name: uniqueCompName }).getByRole('button', { name: 'Ver' }).click();
+        await expect(page).toHaveURL(/\/competitions\/\d+\/info/);
+        await page.getByRole('button', { name: 'Editar' }).click();
         await expect(page).toHaveURL(/\/competitions\/\d+\/edit/);
         await expect(page.getByRole('heading', { name: 'Editar Competición' })).toBeVisible();
         await page.getByLabel('Nombre de la Competición *').fill(updatedCompName);

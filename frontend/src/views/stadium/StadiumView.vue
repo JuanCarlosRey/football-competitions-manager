@@ -35,13 +35,16 @@
             <td class="font-bold">{{ stadium.name }}</td>
             <td>
               <span class="badge"
-                >{{ stadium.capacity.toLocaleString() }} espectadores</span
+                >{{ stadium.capacity?.toLocaleString() }} espectadores</span
               >
             </td>
             <td>
               <span class="address-text">{{ stadium.address }}</span>
             </td>
             <td class="text-right actions">
+              <button class="btn btn-sm btn-info" @click="handleView(stadium.id)">
+                Ver
+              </button>
               <button class="btn btn-sm btn-secondary" @click="handleEdit(stadium.id)">
                 Editar
               </button>
@@ -130,6 +133,14 @@
 }
 .btn-primary:hover {
   background-color: #1d4ed8;
+}
+
+.btn-info {
+  background-color: #0ea5e9;
+  color: white;
+}
+.btn-info:hover {
+  background-color: #0284c7;
 }
 
 .btn-secondary {
@@ -225,6 +236,10 @@ onMounted(() => {
 
 const handleCreate = () => {
   router.push("/stadiums/new");
+};
+
+const handleView = (id: number) => {
+  router.push(`/stadiums/${id}/info`);
 };
 
 const handleEdit = (id: number) => {

@@ -104,7 +104,14 @@ test.describe('Team flow', () => {
         await expect(page).toHaveURL('/teams');
         const createdRow = page.getByRole('row').filter({ hasText: 'FC Barcelona' });
         await expect(createdRow).toBeVisible();
-        await createdRow.getByRole('button', { name: 'Editar' }).click();
+        await createdRow.getByRole('button', { name: 'Ver' }).click();
+        await expect(page).toHaveURL(/\/teams\/\d+\/info/);
+        await expect(page.getByRole('heading', { name: 'FC Barcelona', level: 1 })).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Detalles Generales' })).toBeVisible();
+        await expect(page.getByRole('img', { name: 'Escudo de FC Barcelona' })).toBeVisible();
+        await expect(page.getByText('Joan Laporta').first()).toBeVisible();
+        await expect(page.getByText('FCB').first()).toBeVisible();
+        await page.getByRole('button', { name: 'Editar' }).click();
         await expect(page).toHaveURL(/\/teams\/\d+\/edit/);
         await expect(page.getByRole('heading', { name: 'Editar Equipo' })).toBeVisible();
         await page.getByLabel('Nombre *').fill('FC Barcelona Editado');

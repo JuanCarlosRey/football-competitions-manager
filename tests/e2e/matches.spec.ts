@@ -46,6 +46,7 @@ test.describe('Match flow', () => {
                 startDate: '2026-09-08T00:00:00.000Z',
                 endDate: '2027-06-05T00:00:00.000Z',
                 competitionId: 7,
+                competition: { id: 7, name: 'Champions League' },
             },
         ];
         let matches = [
@@ -57,32 +58,10 @@ test.describe('Match flow', () => {
                 stadiumId: 3,
                 homeTeamId: 7,
                 awayTeamId: 8,
-                season: {
-                    id: 5,
-                    startDate: '2026-09-08T00:00:00.000Z',
-                    endDate: '2027-06-05T00:00:00.000Z',
-                    competitionId: 7,
-                },
-                stadium: {
-                    id: 3,
-                    name: 'Santiago Bernabeu',
-                    capacity: 81044,
-                    address: 'Av. de la Concha Espina, 1, Madrid',
-                },
-                homeTeam: {
-                    id: 7,
-                    name: 'Real Madrid CF',
-                    abbreviation: 'RMA',
-                    crest: 'http://ejemplo.com',
-                    president: 'Florentino Pérez',
-                },
-                awayTeam: {
-                    id: 8,
-                    name: 'Internazionale Milano',
-                    abbreviation: 'INT',
-                    crest: 'http://ejemplo.com',
-                    president: 'Giuseppe Marotta',
-                },
+                season: mockSeasons[0],
+                stadium: mockStadiums[0],
+                homeTeam: mockTeams[0],
+                awayTeam: mockTeams[1],
             },
         ];
         await page.route('**/api/teams', async (route) => {
@@ -181,12 +160,23 @@ test.describe('Match flow', () => {
         await page.getByLabel('Equipo Local *').selectOption({ label: 'FC Barcelona' });
         await page.getByLabel('Equipo Visitante *').selectOption({ label: 'Internazionale Milano' });
         await page.getByLabel('Estadio *').selectOption({ label: 'Santiago Bernabeu' });
-        await page.getByLabel('Temporada *').selectOption({ label: '2026/2027 (Competición #7)' });
+        await page.getByLabel('Temporada *').selectOption({ label: '2026/2027 (Champions League)' });
         await page.getByRole('button', { name: 'Crear Partido' }).click();
         await expect(page).toHaveURL('/matches');
         const createdRow = page.getByRole('row').filter({ hasText: 'FC Barcelona' });
         await expect(createdRow).toBeVisible();
-        await createdRow.getByRole('button', { name: 'Editar' }).click();
+        await createdRow.getByRole('button', { name: 'Ver' }).click();
+        await expect(page).toHaveURL(/\/matches\/\d+\/info/);
+        await expect(page.getByRole('heading', { name: /Partido #\d+/ })).toBeVisible();
+        await expect(page.getByText('FC Barcelona')).toBeVisible();
+        await expect(page.getByText('Internazionale Milano')).toBeVisible();
+        await expect(page.getByText('Detalles del Evento')).toBeVisible();
+        await expect(page.getByText('Santiago Bernabeu')).toBeVisible();
+        await page.getByRole('button', { name: '← Volver' }).click();
+        await expect(page).toHaveURL('/matches');
+        await page.getByRole('row').filter({ hasText: 'FC Barcelona' }).getByRole('button', { name: 'Ver' }).click();
+        await expect(page).toHaveURL(/\/matches\/\d+\/info/);
+        await page.getByRole('button', { name: 'Editar' }).click();
         await expect(page).toHaveURL(/\/matches\/\d+\/edit/);
         await page.getByLabel('Estado *').selectOption('FINISHED');
         await page.getByRole('button', { name: 'Guardar Cambios' }).click();

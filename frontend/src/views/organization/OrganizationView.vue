@@ -4,20 +4,24 @@
       <h1>Organizaciones</h1>
       <button class="btn btn-primary" @click="handleCreate">+ Nueva Organización</button>
     </header>
+
     <div v-if="orgStore.error" class="alert alert-danger">
       <span>{{ orgStore.error }}</span>
       <button class="btn-close" @click="orgStore.clearError()">✕</button>
     </div>
+
     <div v-if="orgStore.isLoading" class="loading-state">
       <div class="spinner"></div>
       <p>Cargando organizaciones...</p>
     </div>
+
     <div
       v-else-if="!orgStore.isLoading && orgStore.organizations.length === 0"
       class="empty-state"
     >
       <p>No hay organizaciones registradas.</p>
     </div>
+
     <div v-else class="table-container">
       <table class="org-table">
         <thead>
@@ -38,6 +42,8 @@
               </span>
             </td>
             <td class="text-right actions">
+              <!-- Botón para ver la información detallada -->
+              <button class="btn btn-sm btn-info" @click="handleView(org.id)">Ver</button>
               <button class="btn btn-sm btn-secondary" @click="handleEdit(org.id)">
                 Editar
               </button>
@@ -123,6 +129,14 @@
 }
 .btn-primary:hover {
   background-color: #1d4ed8;
+}
+
+.btn-info {
+  background-color: #0ea5e9;
+  color: white;
+}
+.btn-info:hover {
+  background-color: #0284c7;
 }
 
 .btn-secondary {
@@ -218,6 +232,10 @@ onMounted(() => {
 
 const handleCreate = () => {
   router.push("/organizations/new");
+};
+
+const handleView = (id: number) => {
+  router.push(`/organizations/${id}/info`);
 };
 
 const handleEdit = (id: number) => {
