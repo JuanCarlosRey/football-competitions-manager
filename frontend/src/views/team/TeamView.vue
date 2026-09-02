@@ -52,6 +52,9 @@
               <span class="president-name">{{ team.president || "-" }}</span>
             </td>
             <td class="text-right actions">
+              <button class="btn btn-sm btn-info" @click="handleView(team.id)">
+                Ver
+              </button>
               <button class="btn btn-sm btn-secondary" @click="handleEdit(team.id)">
                 Editar
               </button>
@@ -159,6 +162,14 @@
   background-color: #1d4ed8;
 }
 
+.btn-info {
+  background-color: #0ea5e9;
+  color: white;
+}
+.btn-info:hover {
+  background-color: #0284c7;
+}
+
 .btn-secondary {
   background-color: #e5e7eb;
   color: #374151;
@@ -252,6 +263,10 @@ onMounted(() => {
 
 const handleCreate = () => {
   router.push("/teams/new");
+};
+
+const handleView = (id: number) => {
+  router.push(`/teams/${id}/info`);
 };
 
 const handleEdit = (id: number) => {

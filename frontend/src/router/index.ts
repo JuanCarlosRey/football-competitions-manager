@@ -1,16 +1,22 @@
 import { createRouter, createWebHistory } from "vue-router";
 import CompetitionsView from "../views/competition/CompetitionView.vue";
 import CompetitionForm from "../views/competition/CompetitionForm.vue"
+import CompetitionDetail from "../views/competition/CompetitionDetail.vue";
 import OrganizationView from "../views/organization/OrganizationView.vue";
 import OrganizationForm from "../views/organization/OrganizationForm.vue";
+import OrganizationDetail from "../views/organization/OrganizationDetail.vue";
 import SeasonView from "../views/season/SeasonView.vue";
 import SeasonForm from "../views/season/SeasonForm.vue";
+import SeasonDetail from "../views/season/SeasonDetail.vue";
 import TeamView from "../views/team/TeamView.vue";
 import TeamForm from "../views/team/TeamForm.vue";
+import TeamDetail from "../views/team/TeamDetail.vue";
 import StadiumView from "../views/stadium/StadiumView.vue";
 import StadiumForm from "../views/stadium/StadiumForm.vue";
+import StadiumDetail from "../views/stadium/StadiumDetail.vue";
 import MatchView from "../views/match/MatchView.vue";
 import MatchForm from "../views/match/MatchForm.vue";
+import MatchDetail from "../views/match/MatchDetail.vue";
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -35,6 +41,11 @@ const router = createRouter({
             component: () => CompetitionForm,
         },
         {
+            path: "/competitions/:id/info",
+            name: "competition-info",
+            component: CompetitionDetail,
+        },
+        {
             path: "/organizations",
             name: "organizations",
             component: OrganizationView,
@@ -48,6 +59,11 @@ const router = createRouter({
             path: "/organizations/:id/edit",
             name: "organization-edit",
             component: OrganizationForm,
+        },
+                {
+            path: "/organizations/:id/info",
+            name: "organization-info",
+            component: OrganizationDetail,
         },
         {
             path: "/seasons",
@@ -65,6 +81,11 @@ const router = createRouter({
             component: SeasonForm,
         },
         {
+            path: "/seasons/:id/info",
+            name: "season-info",
+            component: SeasonDetail,
+        },
+        {
             path: "/teams",
             name: "teams",
             component: TeamView,
@@ -78,6 +99,11 @@ const router = createRouter({
             path: "/teams/:id/edit",
             name: "team-edit",
             component: TeamForm,
+        },
+        {
+            path: "/teams/:id/info",
+            name: "team-info",
+            component: TeamDetail,
         },
         {
             path: "/stadiums",
@@ -95,6 +121,11 @@ const router = createRouter({
             component: StadiumForm,
         },
         {
+            path: "/stadiums/:id/info",
+            name: "stadium-info",
+            component: StadiumDetail,
+        },
+        {
             path: "/matches",
             name: "matches",
             component: MatchView,
@@ -108,6 +139,11 @@ const router = createRouter({
             path: "/matches/:id/edit",
             name: "match-edit",
             component: MatchForm,
+        },
+        {
+            path: "/matches/:id/info",
+            name: "match-info",
+            component: MatchDetail,
         }
     ],
 });

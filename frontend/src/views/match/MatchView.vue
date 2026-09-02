@@ -58,12 +58,16 @@
             </td>
             <td>
               <span class="season-year"
-                >{{ match.season?.startDate.slice(0, 4) }}/{{
-                  match.season?.endDate.slice(0, 4)
+                >{{ match.season?.startDate?.slice(0, 4) }}/{{
+                  match.season?.endDate?.slice(0, 4)
                 }}
               </span>
             </td>
             <td class="text-right actions">
+              <!-- Botón para ver la información detallada -->
+              <button class="btn btn-sm btn-info" @click="handleView(match.id)">
+                Ver
+              </button>
               <button class="btn btn-sm btn-secondary" @click="handleEdit(match.id)">
                 Editar
               </button>
@@ -173,6 +177,14 @@
   background-color: #1d4ed8;
 }
 
+.btn-info {
+  background-color: #0ea5e9;
+  color: white;
+}
+.btn-info:hover {
+  background-color: #0284c7;
+}
+
 .btn-secondary {
   background-color: #e5e7eb;
   color: #374151;
@@ -206,7 +218,7 @@
   color: #3730a3;
 }
 
-.badge-in-progress {
+.badge-live {
   background-color: #fef3c7;
   color: #92400e;
 }
@@ -214,16 +226,6 @@
 .badge-finished {
   background-color: #d1fae5;
   color: #065f46;
-}
-
-.badge-postponed {
-  background-color: #ffedd5;
-  color: #9a3412;
-}
-
-.badge-cancelled {
-  background-color: #fee2e2;
-  color: #991b1b;
 }
 
 .badge-default {
@@ -295,6 +297,10 @@ onMounted(() => {
 
 const handleCreate = () => {
   router.push("/matches/new");
+};
+
+const handleView = (id: number) => {
+  router.push(`/matches/${id}/info`);
 };
 
 const handleEdit = (id: number) => {

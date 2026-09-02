@@ -44,6 +44,9 @@
               <span class="badge"> {{ comp.seasons?.length || 0 }} temporadas </span>
             </td>
             <td class="text-right actions">
+              <button class="btn btn-sm btn-info" @click="handleView(comp.id)">
+                Ver
+              </button>
               <button class="btn btn-sm btn-secondary" @click="handleEdit(comp.id)">
                 Editar
               </button>
@@ -134,6 +137,14 @@
 }
 .btn-primary:hover {
   background-color: #1d4ed8;
+}
+
+.btn-info {
+  background-color: #0ea5e9;
+  color: white;
+}
+.btn-info:hover {
+  background-color: #0284c7;
 }
 
 .btn-secondary {
@@ -229,6 +240,10 @@ onMounted(() => {
 
 const handleCreate = () => {
   router.push("/competitions/new");
+};
+
+const handleView = (id: number) => {
+  router.push(`/competitions/${id}/info`);
 };
 
 const handleEdit = (id: number) => {
