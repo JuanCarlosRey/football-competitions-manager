@@ -114,7 +114,12 @@ test.describe('Season flow', () => {
         await expect(page).toHaveURL('/seasons');
         const createdRow = page.getByRole('row').filter({ hasText: 'Liga Primavera' }).last();
         await expect(createdRow).toBeVisible();
-        await createdRow.getByRole('button', { name: 'Editar' }).click();
+        await createdRow.getByRole('button', { name: 'Ver' }).click();
+        await expect(page).toHaveURL(/\/seasons\/\d+\/info/);
+        await expect(page.getByText('Información General')).toBeVisible();
+        await expect(page.getByText('Partidos de la Temporada')).toBeVisible();
+        await expect(page.getByText('Esta temporada no tiene partidos registrados.')).toBeVisible();
+        await page.getByRole('button', { name: 'Editar' }).click();
         await expect(page).toHaveURL(/\/seasons\/\d+\/edit/);
         await expect(page.getByRole('heading', { name: 'Editar Temporada' })).toBeVisible();
         await page.getByLabel('Fecha de Fin *').fill('2026-12-31');
