@@ -3,7 +3,7 @@
     <header class="header">
       <div class="header-title">
         <button class="btn btn-secondary btn-sm" @click="handleBack">← Volver</button>
-        <h1>{{ stadiumStore.currentStadium?.name || 'Detalle del Estadio' }}</h1>
+        <h1>{{ stadiumStore.currentStadium?.name || "Detalle del Estadio" }}</h1>
       </div>
       <div v-if="stadiumStore.currentStadium" class="actions">
         <button class="btn btn-secondary" @click="handleEdit">Editar</button>
@@ -46,11 +46,19 @@
           </div>
           <div class="info-item span-full">
             <span class="label">Dirección</span>
-            <span class="value address-text">{{ stadiumStore.currentStadium.address }}</span>
+            <span class="value address-text">{{
+              stadiumStore.currentStadium.address
+            }}</span>
           </div>
         </div>
       </div>
-      <div v-if="stadiumStore.currentStadium.matches && stadiumStore.currentStadium.matches.length > 0" class="table-container">
+      <div
+        v-if="
+          stadiumStore.currentStadium.matches &&
+          stadiumStore.currentStadium.matches.length > 0
+        "
+        class="table-container"
+      >
         <div class="table-header">
           <h2>Próximos Partidos en este Estadio</h2>
         </div>
@@ -68,7 +76,8 @@
               <td>{{ match.id }}</td>
               <td>{{ formatDate(match.dateTime) }}</td>
               <td class="font-bold">
-                {{ match.homeTeam?.name || `Equipo ${match.homeTeamId}` }} vs {{ match.awayTeam?.name || `Equipo ${match.awayTeamId}` }}
+                {{ match.homeTeam?.name || `Equipo ${match.homeTeamId}` }} vs
+                {{ match.awayTeam?.name || `Equipo ${match.awayTeamId}` }}
               </td>
               <td>
                 <span class="badge">{{ match.status }}</span>
@@ -80,6 +89,55 @@
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import { onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useStadiumStore } from "../../stores/stadium.store";
+
+const stadiumStore = useStadiumStore();
+const route = useRoute();
+const router = useRouter();
+
+const stadiumId = Number(route.params.id);
+
+onMounted(() => {
+  if (stadiumId) {
+    stadiumStore.fetchStadiumById(stadiumId);
+  }
+});
+
+const handleBack = () => {
+  router.push("/stadiums");
+};
+
+const handleEdit = () => {
+  router.push(`/stadiums/${stadiumId}/edit`);
+};
+
+const confirmDelete = async () => {
+  if (confirm(`¿Estás seguro de que deseas eliminar el estadio con ID ${stadiumId}?`)) {
+    try {
+      await stadiumStore.deleteStadium(stadiumId);
+      router.push("/stadiums");
+    } catch {
+      // El mensaje de error se captura en la store
+    }
+  }
+};
+
+const formatDate = (dateString: string): string => {
+  try {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("es-ES", {
+      dateStyle: "short",
+      timeStyle: "short",
+    }).format(date);
+  } catch {
+    return dateString;
+  }
+};
+</script>
 
 <style scoped>
 .stadium-container {
@@ -292,52 +350,3 @@
   }
 }
 </style>
-
-<script setup lang="ts">
-import { onMounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { useStadiumStore } from "../../stores/stadium.store";
-
-const stadiumStore = useStadiumStore();
-const route = useRoute();
-const router = useRouter();
-
-const stadiumId = Number(route.params.id);
-
-onMounted(() => {
-  if (stadiumId) {
-    stadiumStore.fetchStadiumById(stadiumId);
-  }
-});
-
-const handleBack = () => {
-  router.push("/stadiums");
-};
-
-const handleEdit = () => {
-  router.push(`/stadiums/${stadiumId}/edit`);
-};
-
-const confirmDelete = async () => {
-  if (confirm(`¿Estás seguro de que deseas eliminar el estadio con ID ${stadiumId}?`)) {
-    try {
-      await stadiumStore.deleteStadium(stadiumId);
-      router.push("/stadiums");
-    } catch {
-      // El mensaje de error se captura en la store
-    }
-  }
-};
-
-const formatDate = (dateString: string): string => {
-  try {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat("es-ES", {
-      dateStyle: "short",
-      timeStyle: "short",
-    }).format(date);
-  } catch {
-    return dateString;
-  }
-};
-</script>

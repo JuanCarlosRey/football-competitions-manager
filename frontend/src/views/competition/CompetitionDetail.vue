@@ -1,6 +1,5 @@
 <template>
   <div class="competition-container">
-    <!-- Header con botón de retorno y acciones -->
     <header class="header">
       <div class="header-title">
         <button class="btn btn-secondary btn-sm" @click="handleBack">← Volver</button>
@@ -17,30 +16,21 @@
         <button class="btn btn-danger" @click="confirmDelete">Eliminar</button>
       </div>
     </header>
-
-    <!-- Manejo de Errores -->
     <div v-if="competitionStore.error" class="alert alert-danger">
       <span>{{ competitionStore.error }}</span>
       <button class="btn-close" @click="competitionStore.clearError()">✕</button>
     </div>
-
-    <!-- Estado de Carga -->
     <div v-if="competitionStore.isLoading" class="loading-state">
       <div class="spinner"></div>
       <p>Cargando detalles de la competición...</p>
     </div>
-
-    <!-- Estado Vacío / No Encontrado -->
     <div
       v-else-if="!competitionStore.isLoading && !competitionStore.currentCompetition"
       class="empty-state"
     >
       <p>No se encontró la información de esta competición.</p>
     </div>
-
-    <!-- Contenido Principal -->
     <div v-else-if="competitionStore.currentCompetition" class="detail-content">
-      <!-- Tarjeta de Información General -->
       <div class="info-card">
         <h2>Información General</h2>
         <div class="info-grid">
@@ -73,13 +63,10 @@
           </div>
         </div>
       </div>
-
-      <!-- Listado de Temporadas Asociadas -->
       <div class="table-container">
         <div class="table-header">
           <h2>Temporadas Asociadas</h2>
         </div>
-
         <div
           v-if="
             !competitionStore.currentCompetition.seasons ||
@@ -89,7 +76,6 @@
         >
           <p>Esta competición no tiene temporadas registradas.</p>
         </div>
-
         <table v-else class="competition-table">
           <thead>
             <tr>

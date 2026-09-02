@@ -106,6 +106,55 @@
   </div>
 </template>
 
+<script setup lang="ts">
+import { onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useTeamStore } from "../../stores/team.store";
+
+const teamStore = useTeamStore();
+const route = useRoute();
+const router = useRouter();
+
+const teamId = Number(route.params.id);
+
+onMounted(() => {
+  if (teamId) {
+    teamStore.fetchTeamById(teamId);
+  }
+});
+
+const handleBack = () => {
+  router.push("/teams");
+};
+
+const handleEdit = () => {
+  router.push(`/teams/${teamId}/edit`);
+};
+
+const confirmDelete = async () => {
+  if (confirm(`¿Estás seguro de que deseas eliminar el equipo con ID ${teamId}?`)) {
+    try {
+      await teamStore.deleteTeam(teamId);
+      router.push("/teams");
+    } catch {
+      // El mensaje de error se captura en la store
+    }
+  }
+};
+
+const formatDate = (dateString: string): string => {
+  try {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("es-ES", {
+      dateStyle: "short",
+      timeStyle: "short",
+    }).format(date);
+  } catch {
+    return dateString;
+  }
+};
+</script>
+
 <style scoped>
 .team-container {
   max-width: 1000px;
@@ -360,52 +409,3 @@
   }
 }
 </style>
-
-<script setup lang="ts">
-import { onMounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { useTeamStore } from "../../stores/team.store";
-
-const teamStore = useTeamStore();
-const route = useRoute();
-const router = useRouter();
-
-const teamId = Number(route.params.id);
-
-onMounted(() => {
-  if (teamId) {
-    teamStore.fetchTeamById(teamId);
-  }
-});
-
-const handleBack = () => {
-  router.push("/teams");
-};
-
-const handleEdit = () => {
-  router.push(`/teams/${teamId}/edit`);
-};
-
-const confirmDelete = async () => {
-  if (confirm(`¿Estás seguro de que deseas eliminar el equipo con ID ${teamId}?`)) {
-    try {
-      await teamStore.deleteTeam(teamId);
-      router.push("/teams");
-    } catch {
-      // El mensaje de error se captura en la store
-    }
-  }
-};
-
-const formatDate = (dateString: string): string => {
-  try {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat("es-ES", {
-      dateStyle: "short",
-      timeStyle: "short",
-    }).format(date);
-  } catch {
-    return dateString;
-  }
-};
-</script>
