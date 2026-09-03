@@ -7,6 +7,9 @@ import type {
 } from '../types/stadium';
 import { stadiumService } from '../services/stadium.service';
 
+/**
+ * Pinia store for managing stadiums. This store provides state management for stadiums, including fetching, creating, updating, and deleting stadiums. It also handles loading states and error messages.
+ */
 export const useStadiumStore = defineStore('stadium', () => {
     const stadiums = ref<Stadium[]>([]);
     const currentStadium = ref<Stadium | null>(null);

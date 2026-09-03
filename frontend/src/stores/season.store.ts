@@ -7,6 +7,9 @@ import type {
 } from '../types/season';
 import { seasonService } from '../services/season.service';
 
+/**
+ * Pinia store for managing seasons. This store provides state management for seasons, including fetching, creating, updating, and deleting seasons. It also handles loading states and error messages.
+ */
 export const useSeasonStore = defineStore('season', () => {
     const seasons = ref<Season[]>([]);
     const currentSeason = ref<Season | null>(null);

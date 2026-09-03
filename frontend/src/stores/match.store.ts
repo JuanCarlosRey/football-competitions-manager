@@ -7,6 +7,9 @@ import type {
 } from '../types/match';
 import { matchService } from '../services/match.service';
 
+/**
+ * Pinia store for managing matches. This store provides state management for matches, including fetching, creating, updating, and deleting matches. It also handles loading states and error messages.
+ */
 export const useMatchStore = defineStore('match', () => {
     const matches = ref<Match[]>([]);
     const currentMatch = ref<Match | null>(null);

@@ -1,0 +1,9 @@
+{
+    "entryPoints": [
+        "src/**/*.ts"
+    ],
+    "plugin": ["typedoc-plugin-vue"],
+    "entryPointStrategy": "expand",
+    "out": "docs",
+    "includeVersion": true
+}

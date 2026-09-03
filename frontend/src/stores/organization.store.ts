@@ -7,6 +7,9 @@ import type {
 } from '../types/organization';
 import { organizationService } from '../services/organization.service';
 
+/**
+ * Pinia store for managing organizations. This store provides state management for organizations, including fetching, creating, updating, and deleting organizations. It also handles loading states and error messages.
+ */
 export const useOrganizationStore = defineStore('organization', () => {
     const organizations = ref<Organization[]>([]);
     const currentOrganization = ref<Organization | null>(null);
