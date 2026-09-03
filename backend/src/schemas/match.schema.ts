@@ -1,6 +1,9 @@
 import { z } from 'zod';
 import { PrismaClient } from '@prisma/client';
 
+/**
+ * Enum representing the possible statuses of a match. The valid statuses are 'SCHEDULED', 'LIVE', and 'FINISHED'. This enum is used for validation in the match schemas to ensure that the status field contains a valid value.
+ */
 export const MatchStatusEnum = z.enum(['SCHEDULED', 'LIVE', 'FINISHED'], {
     error: (issue) =>
         issue.input === undefined
@@ -8,6 +11,12 @@ export const MatchStatusEnum = z.enum(['SCHEDULED', 'LIVE', 'FINISHED'], {
             : 'The "status" field must be a valid MatchStatus',
 });
 
+/**
+ * Creates a Zod schema for validating ID fields.
+ * 
+ * @param fieldName The name of the field to validate.
+ * @returns The Zod schema for the ID field.
+ */
 const idSchema = (fieldName: string) =>
     z
         .number({
@@ -19,6 +28,12 @@ const idSchema = (fieldName: string) =>
         .int(`The "${fieldName}" field must be an integer`)
         .positive(`The "${fieldName}" field must be a positive integer`);
 
+/**
+ * Creates a Zod schema for validating optional ID fields.
+ * 
+ * @param fieldName The name of the field to validate.
+ * @returns The Zod schema for the optional ID field.
+ */
 const optionalIdSchema = (fieldName: string) =>
     z
         .number({
@@ -28,6 +43,9 @@ const optionalIdSchema = (fieldName: string) =>
         .positive(`The "${fieldName}" field must be a positive integer`)
         .optional();
 
+/**
+ * Schema for creating a new match. This schema validates the required fields for creating a match, including dateTime, status, seasonId, stadiumId, homeTeamId, and awayTeamId. It also ensures that the home team and away team are not the same.
+ */
 export const createMatchSchema = z
     .object({
         dateTime: z
@@ -49,6 +67,9 @@ export const createMatchSchema = z
         path: ['awayTeamId'],
     });
 
+/**
+ * Schema for updating an existing match. This schema validates the optional fields for updating a match, including dateTime, status, seasonId, stadiumId, homeTeamId, and awayTeamId. It also ensures that if both home team and away team are provided, they are not the same.
+ */
 export const updateMatchSchema = z
     .object({
         dateTime: z
@@ -76,6 +97,12 @@ export const updateMatchSchema = z
         }
     );
 
+/**
+ * Creates a Zod schema for validating match creation with database constraints.
+ *
+ * @param prisma The Prisma client instance.
+ * @returns The Zod schema for creating a match with database validation.
+ */
 export const createMatchWithDbValidation = (prisma: PrismaClient) =>
     createMatchSchema.superRefine(async (data, ctx) => {
         const [season, stadium, homeTeam, awayTeam] = await Promise.all([
@@ -114,6 +141,12 @@ export const createMatchWithDbValidation = (prisma: PrismaClient) =>
         }
     });
 
+/**
+ * Creates a Zod schema for validating match updates with database constraints.
+ *
+ * @param prisma The Prisma client instance.
+ * @returns The Zod schema for updating a match with database validation.
+ */
 export const updateMatchWithDbValidation = (prisma: PrismaClient) =>
     updateMatchSchema.superRefine(async (data, ctx) => {
         const checks = [];
@@ -172,5 +205,12 @@ export const updateMatchWithDbValidation = (prisma: PrismaClient) =>
         await Promise.all(checks);
     });
 
+/**
+ * TypeScript types inferred from the Zod schemas for creating and updating matches. These types can be used for type-checking in the application to ensure that the data conforms to the expected structure defined by the schemas.
+ */
 export type CreateMatchDTO = z.infer<typeof createMatchSchema>;
+
+/**
+ * TypeScript type inferred from the Zod schema for updating matches. This type can be used for type-checking in the application to ensure that the data conforms to the expected structure defined by the update schema.
+ */
 export type UpdateMatchDTO = z.infer<typeof updateMatchSchema>;

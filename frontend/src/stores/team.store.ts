@@ -7,6 +7,9 @@ import type {
 } from '../types/team';
 import { teamService } from '../services/team.service';
 
+/**
+ * Pinia store for managing teams. This store provides state management for teams, including fetching, creating, updating, and deleting teams. It also handles loading states and error messages.
+ */
 export const useTeamStore = defineStore('team', () => {
     const teams = ref<Team[]>([]);
     const currentTeam = ref<Team | null>(null);

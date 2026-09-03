@@ -1,5 +1,8 @@
 import { z } from 'zod';
 
+/**
+ * Schema for creating a new season. This schema validates the required fields for creating a season, including startDate, endDate, and competitionId. It also ensures that the endDate is after the startDate.
+ */
 export const createSeasonSchema = z
     .object({
         startDate: z.coerce.date({
@@ -29,6 +32,9 @@ export const createSeasonSchema = z
         path: ['endDate'],
     });
 
+/**
+ * Schema for updating an existing season. This schema validates the optional fields for updating a season, including startDate, endDate, and competitionId. It also ensures that if both startDate and endDate are provided, the endDate is after the startDate.
+ */
 export const updateSeasonSchema = z
     .object({
         startDate: z.coerce
@@ -62,5 +68,12 @@ export const updateSeasonSchema = z
         }
     );
 
+/**
+ * TypeScript types inferred from the Zod schemas for creating and updating seasons. These types can be used for type-checking in the application to ensure that the data conforms to the expected structure defined by the schemas.
+ */
 export type CreateSeasonDTO = z.infer<typeof createSeasonSchema>;
+
+/**
+ * TypeScript type inferred from the Zod schema for updating seasons. This type can be used for type-checking in the application to ensure that the data conforms to the expected structure defined by the update schema.
+ */
 export type UpdateSeasonDTO = z.infer<typeof updateSeasonSchema>;

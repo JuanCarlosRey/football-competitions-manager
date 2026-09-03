@@ -7,6 +7,9 @@ import type {
 } from '../types/competition';
 import { competitionService } from '../services/competition.service';
 
+/**
+ * Pinia store for managing competitions. This store provides state management for competitions, including fetching, creating, updating, and deleting competitions. It also handles loading states and error messages.
+ */
 export const useCompetitionStore = defineStore('competition', () => {
     const competitions = ref<Competition[]>([]);
     const currentCompetition = ref<Competition | null>(null);

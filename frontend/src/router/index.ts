@@ -18,6 +18,9 @@ import MatchView from "../views/match/MatchView.vue";
 import MatchForm from "../views/match/MatchForm.vue";
 import MatchDetail from "../views/match/MatchDetail.vue";
 
+/**
+ * Router configuration for the application. This router defines the routes for various views. Each route is associated with a specific component that will be rendered when the route is accessed. The router uses HTML5 history mode for navigation.
+ */
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
     routes: [
