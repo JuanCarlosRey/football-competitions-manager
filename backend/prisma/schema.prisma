@@ -21,12 +21,12 @@ model Competition {
 }
 
 model Season {
-  id            Int      @id @default(autoincrement())
+  id            Int         @id @default(autoincrement())
   startDate     DateTime
   endDate       DateTime
   competitionId Int
   competition   Competition @relation(fields: [competitionId], references: [id])
-  matches Match[]
+  matches       Match[]
 }
 
 model Team {
@@ -35,34 +35,55 @@ model Team {
   abbreviation String
   crest        String?
   president    String?
-  homeMatches Match[] @relation("HomeTeam")
-  awayMatches Match[] @relation("AwayTeam")
+  homeMatches  Match[] @relation("HomeTeam")
+  awayMatches  Match[] @relation("AwayTeam")
 }
 
 model Stadium {
-  id       Int    @id @default(autoincrement())
+  id       Int     @id @default(autoincrement())
   name     String
   capacity Int
   address  String
-  matches Match[]
+  matches  Match[]
 }
 
 model Match {
-  id       Int         @id @default(autoincrement())
-  dateTime DateTime
-  status   MatchStatus
-  seasonId  Int
-  stadiumId Int
+  id         Int         @id @default(autoincrement())
+  dateTime   DateTime
+  status     MatchStatus
+  seasonId   Int
+  stadiumId  Int
   homeTeamId Int
   awayTeamId Int
-  season  Season  @relation(fields: [seasonId], references: [id])
-  stadium Stadium @relation(fields: [stadiumId], references: [id])
-  homeTeam Team @relation("HomeTeam", fields: [homeTeamId], references: [id])
-  awayTeam Team @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  season     Season      @relation(fields: [seasonId], references: [id])
+  stadium    Stadium     @relation(fields: [stadiumId], references: [id])
+  homeTeam   Team        @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeam   Team        @relation("AwayTeam", fields: [awayTeamId], references: [id])
+}
+
+model Player {
+  id            Int           @id @default(autoincrement())
+  firstName     String
+  lastName      String
+  birthDate     DateTime
+  position      String
+  nationality   String
+  overall       Int
+  height        Float
+  weight        Float
+  preferredFoot PreferredFoot
+  marketValue   Decimal?      @db.Decimal(12, 2)
+  annualSalary  Decimal?      @db.Decimal(12, 2)
 }
 
 enum MatchStatus {
   SCHEDULED
   LIVE
   FINISHED
+}
+
+enum PreferredFoot {
+  LEFT
+  RIGHT
+  BOTH
 }
