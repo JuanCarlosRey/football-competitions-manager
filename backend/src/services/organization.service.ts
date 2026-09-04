@@ -1,5 +1,5 @@
-import { type Organization, Prisma } from '@prisma/client';
-import { prisma } from '../config/prisma.js';
+import type { Organization, Prisma } from '@prisma/client';
+import * as organizationRepository from '../repositories/organization.repository.js';
 
 /**
  * Retrieve all organizations from the database, including their associated competitions.
@@ -7,9 +7,7 @@ import { prisma } from '../config/prisma.js';
  * @returns A promise that resolves to an array of organizations, including their associated competitions.
  */
 export async function getAll(): Promise<Organization[]> {
-    return prisma.organization.findMany({
-        include: { competitions: true },
-    });
+    return organizationRepository.findAllOrganizations();
 }
 
 /**
@@ -19,10 +17,7 @@ export async function getAll(): Promise<Organization[]> {
  * @returns A promise that resolves to the organization, including its associated competitions.
  */
 export async function getById(id: number): Promise<Organization | null> {
-    return prisma.organization.findUnique({
-        where: { id },
-        include: { competitions: true },
-    });
+    return organizationRepository.findOrganizationById(id);
 }
 
 /**
@@ -32,7 +27,7 @@ export async function getById(id: number): Promise<Organization | null> {
  * @returns A promise that resolves to the created organization.
  */
 export async function create(data: Prisma.OrganizationCreateInput): Promise<Organization> {
-    return prisma.organization.create({ data });
+    return organizationRepository.createOrganization(data);
 }
 
 /**
@@ -43,10 +38,7 @@ export async function create(data: Prisma.OrganizationCreateInput): Promise<Orga
  * @returns A promise that resolves to the updated organization.
  */
 export async function update(id: number, data: Prisma.OrganizationUpdateInput): Promise<Organization> {
-    return prisma.organization.update({
-        where: { id },
-        data,
-    });
+    return organizationRepository.updateOrganization(id, data);
 }
 
 /**
@@ -56,7 +48,5 @@ export async function update(id: number, data: Prisma.OrganizationUpdateInput): 
  * @returns A promise that resolves to the deleted organization.
  */
 export async function deleteOrganization(id: number): Promise<Organization> {
-    return prisma.organization.delete({
-        where: { id },
-    });
+    return organizationRepository.deleteOrganizationById(id);
 }

@@ -1,12 +1,5 @@
-import { type Match, Prisma } from '@prisma/client';
-import { prisma } from '../config/prisma.js';
-
-const includeRelations = {
-    season: true,
-    stadium: true,
-    homeTeam: true,
-    awayTeam: true,
-};
+import type { Match, Prisma } from '@prisma/client';
+import * as matchRepository from '../repositories/match.repository.js';
 
 /**
  * Retrieve all matches from the database.
@@ -14,9 +7,7 @@ const includeRelations = {
  * @returns A promise that resolves to an array of matches, including their associated season, stadium, home team, and away team.
  */
 export async function getAll(): Promise<Match[]> {
-    return prisma.match.findMany({
-        include: includeRelations,
-    });
+    return matchRepository.findAllMatches();
 }
 
 /**
@@ -26,10 +17,7 @@ export async function getAll(): Promise<Match[]> {
  * @returns A promise that resolves to the match, including its associated season, stadium, home team, and away team.
  */
 export async function getById(id: number): Promise<Match | null> {
-    return prisma.match.findUnique({
-        where: { id },
-        include: includeRelations,
-    });
+    return matchRepository.findMatchById(id);
 }
 
 /**
@@ -39,10 +27,7 @@ export async function getById(id: number): Promise<Match | null> {
  * @returns A promise that resolves to the created match.
  */
 export async function create(data: Prisma.MatchUncheckedCreateInput): Promise<Match> {
-    return prisma.match.create({
-        data,
-        include: includeRelations,
-    });
+    return matchRepository.createMatch(data);
 }
 
 /**
@@ -53,11 +38,7 @@ export async function create(data: Prisma.MatchUncheckedCreateInput): Promise<Ma
  * @returns A promise that resolves to the updated match.
  */
 export async function update(id: number, data: Prisma.MatchUncheckedUpdateInput): Promise<Match> {
-    return prisma.match.update({
-        where: { id },
-        data,
-        include: includeRelations,
-    });
+    return matchRepository.updateMatch(id, data);
 }
 
 /**
@@ -67,7 +48,5 @@ export async function update(id: number, data: Prisma.MatchUncheckedUpdateInput)
  * @returns A promise that resolves to the deleted match.
  */
 export async function deleteMatch(id: number): Promise<Match> {
-    return prisma.match.delete({
-        where: { id },
-    });
+    return matchRepository.deleteMatchById(id);
 }
