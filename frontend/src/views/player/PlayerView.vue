@@ -4,24 +4,20 @@
       <h1>Jugadores</h1>
       <button class="btn btn-primary" @click="handleCreate">+ Nuevo Jugador</button>
     </header>
-
     <div v-if="playerStore.error" class="alert alert-danger">
       <span>{{ playerStore.error }}</span>
       <button class="btn-close" @click="playerStore.clearError()">✕</button>
     </div>
-
     <div v-if="playerStore.isLoading" class="loading-state">
       <div class="spinner"></div>
       <p>Cargando jugadores...</p>
     </div>
-
     <div
       v-else-if="!playerStore.isLoading && playerStore.players.length === 0"
       class="empty-state"
     >
       <p>No hay jugadores registrados.</p>
     </div>
-
     <div v-else class="table-container">
       <table class="player-table">
         <thead>

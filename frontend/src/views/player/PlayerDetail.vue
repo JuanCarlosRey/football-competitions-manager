@@ -12,26 +12,21 @@
         <button class="btn btn-danger" @click="confirmDelete">Eliminar</button>
       </div>
     </header>
-
     <div v-if="playerStore.error" class="alert alert-danger">
       <span>{{ playerStore.error }}</span>
       <button class="btn-close" @click="playerStore.clearError()">✕</button>
     </div>
-
     <div v-if="playerStore.isLoading" class="loading-state">
       <div class="spinner"></div>
       <p>Cargando detalles del jugador...</p>
     </div>
-
     <div
       v-else-if="!playerStore.isLoading && !playerStore.currentPlayer"
       class="empty-state"
     >
       <p>No se encontró la información de este jugador.</p>
     </div>
-
     <div v-else-if="playerStore.currentPlayer" class="detail-content">
-      <!-- Tarjeta de Información General -->
       <div class="info-card">
         <h2>Información Personal y Deportiva</h2>
         <div class="info-grid">
@@ -102,8 +97,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Tabla de Partidos / Estadísticas -->
       <div class="table-container">
         <div class="table-header">
           <h2>Historial de Partidos</h2>

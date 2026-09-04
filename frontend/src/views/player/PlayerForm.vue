@@ -4,12 +4,10 @@
       <h1>{{ isEditing ? "Editar Jugador" : "Nuevo Jugador" }}</h1>
       <button class="btn btn-secondary" @click="handleCancel">Cancelar</button>
     </header>
-
     <div v-if="error" class="alert alert-danger">
       <span>{{ error }}</span>
       <button class="btn-close" @click="error = null">✕</button>
     </div>
-
     <form @submit.prevent="handleSubmit" class="form-card">
       <div class="form-row">
         <div class="form-group">
@@ -23,7 +21,6 @@
             required
           />
         </div>
-
         <div class="form-group">
           <label for="lastName">Apellido *</label>
           <input
@@ -36,7 +33,6 @@
           />
         </div>
       </div>
-
       <div class="form-row">
         <div class="form-group">
           <label for="birthDate">Fecha de Nacimiento *</label>
@@ -48,7 +44,6 @@
             required
           />
         </div>
-
         <div class="form-group">
           <label for="nationality">Nacionalidad *</label>
           <input
@@ -61,7 +56,6 @@
           />
         </div>
       </div>
-
       <div class="form-row">
         <div class="form-group">
           <label for="position">Posición *</label>
@@ -74,7 +68,6 @@
             required
           />
         </div>
-
         <div class="form-group">
           <label for="preferredFoot">Pie Preferido *</label>
           <select
@@ -90,7 +83,6 @@
           </select>
         </div>
       </div>
-
       <div class="form-row form-row-3">
         <div class="form-group">
           <label for="overall">Media (40-109) *</label>
@@ -104,7 +96,6 @@
             required
           />
         </div>
-
         <div class="form-group">
           <label for="height">Altura (m) *</label>
           <input
@@ -119,7 +110,6 @@
             required
           />
         </div>
-
         <div class="form-group">
           <label for="weight">Peso (kg) *</label>
           <input
@@ -135,7 +125,6 @@
           />
         </div>
       </div>
-
       <div class="form-row">
         <div class="form-group">
           <label for="marketValue">Valor de Mercado (€)</label>
@@ -148,7 +137,6 @@
             placeholder="Ej. 150000000"
           />
         </div>
-
         <div class="form-group">
           <label for="annualSalary">Salario Anual (€)</label>
           <input
@@ -161,7 +149,6 @@
           />
         </div>
       </div>
-
       <div class="form-actions">
         <button
           type="button"
@@ -390,7 +377,6 @@ onMounted(async () => {
 
 const handleSubmit = async () => {
   error.value = null;
-
   if (
     !formData.firstName ||
     !formData.lastName ||
@@ -405,12 +391,10 @@ const handleSubmit = async () => {
     error.value = "Por favor, completa todos los campos requeridos.";
     return;
   }
-
   if (Number(formData.overall) < 1 || Number(formData.overall) > 99) {
     error.value = "La valoración media debe estar entre 1 y 99.";
     return;
   }
-
   try {
     const payload = {
       firstName: formData.firstName,
@@ -425,7 +409,6 @@ const handleSubmit = async () => {
       marketValue: formData.marketValue !== null ? Number(formData.marketValue) : null,
       annualSalary: formData.annualSalary !== null ? Number(formData.annualSalary) : null,
     };
-
     if (isEditing.value && playerId.value) {
       await playerStore.updatePlayer(playerId.value, payload);
     } else {
