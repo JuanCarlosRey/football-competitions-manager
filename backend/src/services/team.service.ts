@@ -1,5 +1,5 @@
-import { type Team, Prisma } from '@prisma/client';
-import { prisma } from '../config/prisma.js';
+import type { Team, Prisma } from '@prisma/client';
+import * as teamRepository from '../repositories/team.repository.js';
 
 /**
  * Retrieve all teams from the database, including their associated matches.
@@ -7,12 +7,7 @@ import { prisma } from '../config/prisma.js';
  * @returns A promise that resolves to an array of teams, including their associated matches.
  */
 export async function getAll(): Promise<Team[]> {
-    return prisma.team.findMany({
-        include: {
-            homeMatches: true,
-            awayMatches: true,
-        },
-    });
+    return teamRepository.findAllTeams();
 }
 
 /**
@@ -22,13 +17,7 @@ export async function getAll(): Promise<Team[]> {
  * @returns A promise that resolves to the team, including its associated matches.
  */
 export async function getById(id: number): Promise<Team | null> {
-    return prisma.team.findUnique({
-        where: { id },
-        include: {
-            homeMatches: true,
-            awayMatches: true,
-        },
-    });
+    return teamRepository.findTeamById(id);
 }
 
 /**
@@ -38,9 +27,7 @@ export async function getById(id: number): Promise<Team | null> {
  * @returns A promise that resolves to the created team.
  */
 export async function create(data: Prisma.TeamCreateInput): Promise<Team> {
-    return prisma.team.create({
-        data,
-    });
+    return teamRepository.createTeam(data);
 }
 
 /**
@@ -51,10 +38,7 @@ export async function create(data: Prisma.TeamCreateInput): Promise<Team> {
  * @returns A promise that resolves to the updated team.
  */
 export async function update(id: number, data: Prisma.TeamUpdateInput): Promise<Team> {
-    return prisma.team.update({
-        where: { id },
-        data,
-    });
+    return teamRepository.updateTeam(id, data);
 }
 
 /**
@@ -64,7 +48,5 @@ export async function update(id: number, data: Prisma.TeamUpdateInput): Promise<
  * @returns A promise that resolves to the deleted team.
  */
 export async function deleteTeam(id: number): Promise<Team> {
-    return prisma.team.delete({
-        where: { id },
-    });
+    return teamRepository.deleteTeamById(id);
 }
