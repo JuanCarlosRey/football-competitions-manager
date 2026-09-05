@@ -20,7 +20,7 @@ export async function findPlayersByTeamId(teamId: number): Promise<TeamPlayer[]>
 }
 
 /**
- * Find an active team-player relation where endDate is null.
+ * Find an active team-player relation where endDate is null for a specific team.
  * 
  * @param teamId The ID of the team.
  * @param playerId The ID of the player.
@@ -30,6 +30,22 @@ export async function findActiveTeamPlayer(teamId: number, playerId: number): Pr
     return prisma.teamPlayer.findFirst({
         where: {
             teamId,
+            playerId,
+            endDate: null,
+        },
+        include: includeRelations,
+    });
+}
+
+/**
+ * Find any active contract for a player regardless of the team (endDate is null).
+ * 
+ * @param playerId The ID of the player.
+ * @returns A promise that resolves to the active TeamPlayer record or null if not found.
+ */
+export async function findActivePlayerContract(playerId: number): Promise<TeamPlayer | null> {
+    return prisma.teamPlayer.findFirst({
+        where: {
             playerId,
             endDate: null,
         },

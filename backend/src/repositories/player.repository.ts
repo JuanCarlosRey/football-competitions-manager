@@ -6,8 +6,19 @@ import { prisma } from '../config/prisma.js';
  * 
  * @returns A promise that resolves to an array of players.
  */
-export async function findAllPlayers(): Promise<Player[]> {
-    return prisma.player.findMany();
+export async function findAllPlayers() {
+    return prisma.player.findMany({
+        include: {
+            teams: {
+                where: {
+                    endDate: null,
+                },
+                include: {
+                    team: true,
+                },
+            },
+        },
+    });
 }
 
 /**

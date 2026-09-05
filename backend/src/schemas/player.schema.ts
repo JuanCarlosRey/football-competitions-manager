@@ -11,9 +11,8 @@ export const PreferredFootEnum = z.enum(['LEFT', 'RIGHT', 'BOTH'], {
 });
 
 /**
- * Schema for creating a new player. This schema validates all required fields for creating a player, 
- * including names, birth date, physical attributes, overall rating, position, nationality, and preferred foot. 
- * Optional fields like marketValue and annualSalary are also validated to meet financial constraints if provided.
+ * Schema for creating a new player. Validates all required attributes and includes
+ * optional financial fields and team assignment via "teamId".
  */
 export const createPlayerSchema = z.object({
     firstName: z
@@ -96,11 +95,19 @@ export const createPlayerSchema = z.object({
         .gte(0, 'The "annualSalary" field must be greater than or equal to 0')
         .nullable()
         .optional(),
+    teamId: z
+        .number({
+            error: () => 'The "teamId" field must be a number',
+        })
+        .int('The "teamId" field must be an integer')
+        .positive('The "teamId" field must be a positive integer')
+        .nullable()
+        .optional(),
 });
 
 /**
- * Schema for updating an existing player. This schema validates the optional fields for updating a player, 
- * ensuring that if provided, the fields adhere to expected types, bounds, and enum definitions.
+ * Schema for updating an existing player. Validates optional fields for updating player details,
+ * including changing or removing their current team assignment.
  */
 export const updatePlayerSchema = z.object({
     firstName: z
@@ -169,6 +176,14 @@ export const updatePlayerSchema = z.object({
             error: () => 'The "annualSalary" field must be a number',
         })
         .gte(0, 'The "annualSalary" field must be greater than or equal to 0')
+        .nullable()
+        .optional(),
+    teamId: z
+        .number({
+            error: () => 'The "teamId" field must be a number',
+        })
+        .int('The "teamId" field must be an integer')
+        .positive('The "teamId" field must be a positive integer')
         .nullable()
         .optional(),
 });

@@ -13,9 +13,15 @@ const mockPrisma = {
     },
 };
 
+const mockTeamPlayerService = {
+    addPlayerToTeam: jest.fn(),
+};
+
 jest.unstable_mockModule('../../src/config/prisma.js', () => ({
     prisma: mockPrisma,
 }));
+
+jest.unstable_mockModule('../../src/services/team-player.service.js', () => mockTeamPlayerService);
 
 const {
     getAll,
@@ -45,12 +51,50 @@ describe('Player Service', () => {
         annualSalary: new Prisma.Decimal(15000000),
     };
 
+    const mockPlayerWithTeam = {
+        ...mockPlayer,
+        teams: [
+            {
+                team: {
+                    id: 5,
+                    name: 'FC Barcelona',
+                },
+            },
+        ],
+    };
+
     describe('getAll', () => {
-        it('should return all players', async () => {
-            mockPrisma.player.findMany.mockResolvedValue([mockPlayer] as never);
+        it('should return all players with mapped current team info', async () => {
+            mockPrisma.player.findMany.mockResolvedValue([mockPlayerWithTeam] as never);
             const result = await getAll();
-            expect(mockPrisma.player.findMany).toHaveBeenCalledWith();
-            expect(result).toEqual([mockPlayer]);
+            expect(mockPrisma.player.findMany).toHaveBeenCalledWith({
+                include: {
+                    teams: {
+                        where: { endDate: null },
+                        include: { team: true },
+                    },
+                },
+            });
+            expect(result).toEqual([
+                {
+                    ...mockPlayerWithTeam,
+                    currentTeam: 'FC Barcelona',
+                    currentTeamId: 5,
+                },
+            ]);
+        });
+
+        it('should return null for currentTeam when player has no active team', async () => {
+            const playerWithoutTeam = { ...mockPlayer, teams: [] };
+            mockPrisma.player.findMany.mockResolvedValue([playerWithoutTeam] as never);
+            const result = await getAll();
+            expect(result).toEqual([
+                {
+                    ...playerWithoutTeam,
+                    currentTeam: null,
+                    currentTeamId: null,
+                },
+            ]);
         });
 
         it('should return an empty array if no players exist', async () => {
@@ -78,7 +122,7 @@ describe('Player Service', () => {
     });
 
     describe('create', () => {
-        it('should create a player', async () => {
+        it('should create a player without team assignment if teamId is not provided', async () => {
             const createData: CreatePlayerDTO = {
                 firstName: 'Lamine',
                 lastName: 'Yamal',
@@ -93,9 +137,39 @@ describe('Player Service', () => {
                 annualSalary: 15000000,
             };
             mockPrisma.player.create.mockResolvedValue(mockPlayer as never);
-            const result = await create(createData as unknown as Parameters<typeof create>[0]);
+            const result = await create(createData);
             expect(mockPrisma.player.create).toHaveBeenCalledWith({
                 data: createData,
+            });
+            expect(mockTeamPlayerService.addPlayerToTeam).not.toHaveBeenCalled();
+            expect(result).toEqual(mockPlayer);
+        });
+
+        it('should create a player and assign them to a team if teamId is provided', async () => {
+            const createDataWithTeam: CreatePlayerDTO = {
+                firstName: 'Kylian',
+                lastName: 'Mbappé',
+                birthDate: new Date('1998-12-20'),
+                position: 'ST',
+                nationality: 'France',
+                overall: 91,
+                height: 1.78,
+                weight: 75.0,
+                preferredFoot: 'RIGHT',
+                marketValue: 180000000,
+                annualSalary: 30000000,
+                teamId: 7,
+            };
+            const { teamId, ...expectedPlayerData } = createDataWithTeam;
+            mockPrisma.player.create.mockResolvedValue(mockPlayer as never);
+            mockTeamPlayerService.addPlayerToTeam.mockResolvedValue({} as never);
+            const result = await create(createDataWithTeam);
+            expect(mockPrisma.player.create).toHaveBeenCalledWith({
+                data: expectedPlayerData,
+            });
+            expect(mockTeamPlayerService.addPlayerToTeam).toHaveBeenCalledWith(teamId, {
+                playerId: mockPlayer.id,
+                startDate: expect.any(Date),
             });
             expect(result).toEqual(mockPlayer);
         });
