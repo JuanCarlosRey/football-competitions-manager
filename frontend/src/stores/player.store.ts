@@ -3,16 +3,23 @@ import { ref, computed } from 'vue';
 import type {
     Player,
     CreatePlayerDTO,
-    UpdatePlayerDTO
+    UpdatePlayerDTO,
+    PlayerCareerItem,
+    TeamPlayerRelation,
+    AddPlayerToTeamDTO,
+    UpdatePlayerTeamDatesDTO,
 } from '../types/player';
 import { playerService } from '../services/player.service';
 
 /**
- * Pinia store for managing players. This store provides state management for players, including fetching, creating, updating, and deleting players. It also handles loading states and error messages.
+ * Pinia store for managing players and team assignments.
+ * Handles state for players, career histories, team rosters, loading states, and error handling.
  */
 export const usePlayerStore = defineStore('player', () => {
     const players = ref<Player[]>([]);
     const currentPlayer = ref<Player | null>(null);
+    const careerHistory = ref<PlayerCareerItem[]>([]);
+    const teamPlayers = ref<TeamPlayerRelation[]>([]);
     const isLoading = ref<boolean>(false);
     const error = ref<string | null>(null);
 
@@ -103,6 +110,86 @@ export const usePlayerStore = defineStore('player', () => {
         }
     }
 
+    async function fetchPlayerCareer(id: number) {
+        isLoading.value = true;
+        error.value = null;
+        try {
+            careerHistory.value = await playerService.getCareer(id);
+        } catch (err: unknown) {
+            error.value = (err as { response?: { data?: { error?: string } } }).response?.data?.error || `Error al obtener el historial del jugador con ID ${id}`;
+            console.error(err);
+        } finally {
+            isLoading.value = false;
+        }
+    }
+
+    async function fetchPlayersByTeam(teamId: number) {
+        isLoading.value = true;
+        error.value = null;
+        try {
+            teamPlayers.value = await playerService.getPlayersByTeam(teamId);
+        } catch (err: unknown) {
+            error.value = (err as { response?: { data?: { error?: string } } }).response?.data?.error || `Error al obtener la plantilla del equipo ${teamId}`;
+            console.error(err);
+        } finally {
+            isLoading.value = false;
+        }
+    }
+
+    async function addPlayerToTeam(teamId: number, data: AddPlayerToTeamDTO) {
+        isLoading.value = true;
+        error.value = null;
+        try {
+            const newRelation = await playerService.addToTeam(teamId, data);
+            teamPlayers.value.push(newRelation);
+            return newRelation;
+        } catch (err: unknown) {
+            error.value = (err as { response?: { data?: { error?: string } } }).response?.data?.error || 'Error al vincular el jugador al equipo';
+            console.error(err);
+            throw err;
+        } finally {
+            isLoading.value = false;
+        }
+    }
+
+    async function updateTeamContract(teamId: number, playerId: number, data: UpdatePlayerTeamDatesDTO) {
+        isLoading.value = true;
+        error.value = null;
+        try {
+            const updatedRelation = await playerService.updateTeamContract(teamId, playerId, data);
+            const index = teamPlayers.value.findIndex(
+                (rel) => rel.teamId === teamId && rel.playerId === playerId
+            );
+            if (index !== -1) {
+                teamPlayers.value[index] = updatedRelation;
+            }
+            return updatedRelation;
+        } catch (err: unknown) {
+            error.value = (err as { response?: { data?: { error?: string } } }).response?.data?.error || 'Error al actualizar el contrato del jugador';
+            console.error(err);
+            throw err;
+        } finally {
+            isLoading.value = false;
+        }
+    }
+
+    async function removePlayerFromTeam(teamId: number, playerId: number) {
+        isLoading.value = true;
+        error.value = null;
+        try {
+            await playerService.removeFromTeam(teamId, playerId);
+            teamPlayers.value = teamPlayers.value.filter(
+                (rel) => !(rel.teamId === teamId && rel.playerId === playerId)
+            );
+        } catch (err: unknown) {
+            error.value = (err as { response?: { data?: { error?: string } } }).response?.data?.error || 'Error al desvincular el jugador del equipo';
+            console.error(err);
+            throw err;
+        } finally {
+            isLoading.value = false;
+        }
+    }
+
     function clearError() {
         error.value = null;
     }
@@ -110,6 +197,8 @@ export const usePlayerStore = defineStore('player', () => {
     return {
         players,
         currentPlayer,
+        careerHistory,
+        teamPlayers,
         isLoading,
         error,
         totalPlayers,
@@ -119,6 +208,11 @@ export const usePlayerStore = defineStore('player', () => {
         createPlayer,
         updatePlayer,
         deletePlayer,
+        fetchPlayerCareer,
+        fetchPlayersByTeam,
+        addPlayerToTeam,
+        updateTeamContract,
+        removePlayerFromTeam,
         clearError,
     };
 });

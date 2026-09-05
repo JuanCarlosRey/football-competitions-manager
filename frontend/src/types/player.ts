@@ -19,6 +19,7 @@ export interface Player {
     preferredFoot: PreferredFoot;
     marketValue?: number | null;
     annualSalary?: number | null;
+    currentTeam?: string | { id: number; name: string } | null;
 }
 
 /**
@@ -53,4 +54,44 @@ export interface UpdatePlayerDTO {
     preferredFoot?: PreferredFoot;
     marketValue?: number | null;
     annualSalary?: number | null;
+}
+
+/**
+ * Represents an entry in a player's career history.
+ */
+export interface PlayerCareerItem {
+    team: string;
+    startDate: string | Date;
+    endDate?: string | Date | null;
+}
+
+/**
+ * Represents a player's association with a specific team.
+ */
+export interface TeamPlayerRelation {
+    id: number;
+    teamId: number;
+    playerId: number;
+    startDate: string;
+    endDate: string | null;
+    team?: {
+        id: number;
+        name: string;
+    };
+    player?: Player;
+}
+
+/**
+ * Data Transfer Object for assigning a player to a team.
+ */
+export interface AddPlayerToTeamDTO {
+    playerId: number;
+    startDate: string | Date;
+}
+
+/**
+ * Data Transfer Object for updating player contract dates in a team.
+ */
+export interface UpdatePlayerTeamDatesDTO {
+    endDate: string | Date;
 }

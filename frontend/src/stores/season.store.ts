@@ -26,7 +26,6 @@ export const useSeasonStore = defineStore('season', () => {
         error.value = null;
         try {
             seasons.value = await seasonService.getAll();
-            console.log(seasons.value)
         } catch (err: unknown) {
             error.value = (err as { response?: { data?: { error?: string } } }).response?.data?.error || 'Error al cargar las temporadas';
             console.error(err);

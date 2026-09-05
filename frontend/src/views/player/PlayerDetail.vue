@@ -99,49 +99,39 @@
       </div>
       <div class="table-container">
         <div class="table-header">
-          <h2>Historial de Partidos</h2>
+          <h2>Historial de Equipos (Trayectoria)</h2>
         </div>
-        <!-- <div
-          v-if="
-            !playerStore.currentPlayer.playerStats ||
-            playerStore.currentPlayer.playerStats.length === 0
-          "
-          class="empty-state"
-        > -->
-        <p>Este jugador no tiene registros de estadísticas en partidos.</p>
-        <!-- </div> -->
-        <!-- <table v-else class="player-table">
+        <div v-if="playerStore.careerHistory.length === 0" class="empty-state">
+          <p>Este jugador no tiene registros de equipos en su historial.</p>
+        </div>
+        <table v-else class="player-table">
           <thead>
             <tr>
-              <th>Partido ID</th>
-              <th>Minutos Jugados</th>
-              <th>Goles</th>
-              <th>Asistencias</th>
-              <th>Tarjetas</th>
-              <th>Valoración</th>
+              <th>Equipo</th>
+              <th>Fecha de Inicio</th>
+              <th>Fecha de Fin</th>
+              <th>Estado</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="stat in playerStore.currentPlayer.playerStats" :key="stat.id">
-              <td>#{{ stat.matchId }}</td>
-              <td>{{ stat.minutesPlayed }}'</td>
-              <td class="font-bold">{{ stat.goals }}</td>
-              <td>{{ stat.assists }}</td>
+            <tr
+              v-for="(item, index) in playerStore.careerHistory"
+              :key="`${item.team}-${item.startDate}-${index}`"
+            >
+              <td class="font-bold">{{ item.team }}</td>
+              <td>{{ formatDate(item.startDate) }}</td>
+              <td>{{ item.endDate ? formatDate(item.endDate) : "Presente" }}</td>
               <td>
-                <span v-if="stat.yellowCards" class="card-badge yellow"
-                  >{{ stat.yellowCards }} 🟨</span
+                <span
+                  class="badge"
+                  :class="!item.endDate ? 'status-active' : 'status-past'"
                 >
-                <span v-if="stat.redCards" class="card-badge red"
-                  >{{ stat.redCards }} 🟥</span
-                >
-                <span v-if="!stat.yellowCards && !stat.redCards">-</span>
-              </td>
-              <td>
-                <span class="badge">{{ stat.rating ?? "-" }}</span>
+                  {{ !item.endDate ? "Actual" : "Anterior" }}
+                </span>
               </td>
             </tr>
           </tbody>
-        </table> -->
+        </table>
       </div>
     </div>
   </div>
@@ -287,8 +277,6 @@
 }
 
 .badge {
-  background-color: #e0e7ff;
-  color: #3730a3;
   padding: 0.25rem 0.5rem;
   border-radius: 9999px;
   font-size: 0.75rem;
@@ -306,9 +294,14 @@
   font-size: 0.875rem;
 }
 
-.card-badge {
-  font-size: 0.875rem;
-  margin-right: 0.25rem;
+.status-active {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.status-past {
+  background-color: #f3f4f6;
+  color: #6b7280;
 }
 
 .alert {
@@ -372,9 +365,10 @@ const router = useRouter();
 
 const playerId = Number(route.params.id);
 
-onMounted(() => {
+onMounted(async () => {
   if (playerId) {
-    playerStore.fetchPlayerById(playerId);
+    await playerStore.fetchPlayerById(playerId);
+    await playerStore.fetchPlayerCareer(playerId);
   }
 });
 
@@ -397,7 +391,7 @@ const confirmDelete = async () => {
   }
 };
 
-const formatDate = (dateString: string | Date): string => {
+const formatDate = (dateString: string | Date | null | undefined): string => {
   if (!dateString) return "-";
   return new Date(dateString).toLocaleDateString();
 };

@@ -9,6 +9,21 @@
       <button class="btn-close" @click="error = null">✕</button>
     </div>
     <form @submit.prevent="handleSubmit" class="form-card">
+      <div v-if="!isEditing" class="form-row">
+        <div class="form-group full-width">
+          <label for="teamId">Equipo Inicial (Opcional)</label>
+          <select id="teamId" v-model="formData.teamId" class="form-control">
+            <option :value="null">-- Agente Libre / Sin Equipo --</option>
+            <option v-for="team in teamStore.teams" :key="team.id" :value="team.id">
+              {{ team.name }}
+            </option>
+          </select>
+          <small class="text-muted">
+            Si deseas asignar un equipo al crear al jugador. Para cambiarlo
+            posteriormente, utiliza la opción de Traspaso.
+          </small>
+        </div>
+      </div>
       <div class="form-row">
         <div class="form-group">
           <label for="firstName">Nombre *</label>
@@ -201,6 +216,10 @@
   grid-template-columns: 1fr 1fr 1fr;
 }
 
+.full-width {
+  grid-column: 1 / -1;
+}
+
 @media (max-width: 640px) {
   .form-row,
   .form-row-3 {
@@ -232,6 +251,11 @@
 .form-control:focus {
   border-color: #2563eb;
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+.text-muted {
+  font-size: 0.75rem;
+  color: #6b7280;
 }
 
 .form-actions {
@@ -319,11 +343,13 @@
 import { ref, reactive, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { usePlayerStore } from "../../stores/player.store";
+import { useTeamStore } from "../../stores/team.store";
 import type { PreferredFoot } from "../../types/player";
 
 const route = useRoute();
 const router = useRouter();
 const playerStore = usePlayerStore();
+const teamStore = useTeamStore();
 
 const playerId = computed(() => {
   const id = route.params.id;
@@ -334,6 +360,7 @@ const isEditing = computed(() => !!playerId.value);
 const error = ref<string | null>(null);
 
 const formData = reactive({
+  teamId: null as number | null,
   firstName: "",
   lastName: "",
   birthDate: "",
@@ -354,7 +381,9 @@ const formatToInputDate = (dateValue: string | Date): string => {
 };
 
 onMounted(async () => {
-  if (isEditing.value && playerId.value) {
+  if (!isEditing.value) {
+    await teamStore.fetchTeams();
+  } else if (playerId.value) {
     await playerStore.fetchPlayerById(playerId.value);
     const player = playerStore.currentPlayer;
     if (player) {
@@ -391,8 +420,8 @@ const handleSubmit = async () => {
     error.value = "Por favor, completa todos los campos requeridos.";
     return;
   }
-  if (Number(formData.overall) < 1 || Number(formData.overall) > 99) {
-    error.value = "La valoración media debe estar entre 1 y 99.";
+  if (Number(formData.overall) < 40 || Number(formData.overall) > 109) {
+    error.value = "La valoración media debe estar entre 40 y 109.";
     return;
   }
   try {
@@ -408,6 +437,7 @@ const handleSubmit = async () => {
       preferredFoot: formData.preferredFoot as PreferredFoot,
       marketValue: formData.marketValue !== null ? Number(formData.marketValue) : null,
       annualSalary: formData.annualSalary !== null ? Number(formData.annualSalary) : null,
+      ...(formData.teamId ? { teamId: formData.teamId } : {}),
     };
     if (isEditing.value && playerId.value) {
       await playerStore.updatePlayer(playerId.value, payload);
@@ -424,3 +454,5 @@ const handleCancel = () => {
   router.push("/players");
 };
 </script>
+
+

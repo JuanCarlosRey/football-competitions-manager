@@ -20,6 +20,7 @@ import MatchDetail from "../views/match/MatchDetail.vue";
 import PlayerView from "../views/player/PlayerView.vue";
 import PlayerForm from "../views/player/PlayerForm.vue";
 import PlayerDetail from "../views/player/PlayerDetail.vue";
+import PlayerTransfer from "../views/player/PlayerTransfer.vue";
 
 /**
  * Router configuration for the application. This router defines the routes for various views. Each route is associated with a specific component that will be rendered when the route is accessed. The router uses HTML5 history mode for navigation.
@@ -170,6 +171,11 @@ const router = createRouter({
             path: "/players/:id/info",
             name: "player-info",
             component: PlayerDetail,
+        },
+        {
+            path: "/players/:id/transfer",
+            name: "player-transfer",
+            component: PlayerTransfer,
         }
     ],
 });

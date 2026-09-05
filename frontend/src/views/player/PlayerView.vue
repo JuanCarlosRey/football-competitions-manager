@@ -24,6 +24,7 @@
           <tr>
             <th>ID</th>
             <th>Nombre</th>
+            <th>Equipo Actual</th>
             <th>Posición</th>
             <th>Nacionalidad</th>
             <th>Media</th>
@@ -37,6 +38,12 @@
           <tr v-for="player in playerStore.players" :key="player.id">
             <td>{{ player.id }}</td>
             <td class="font-bold">{{ player.firstName }} {{ player.lastName }}</td>
+            <td>
+              <span v-if="getTeamName(player.currentTeam)" class="badge team-badge">
+                {{ getTeamName(player.currentTeam) }}
+              </span>
+              <span v-else class="text-muted">Sin equipo</span>
+            </td>
             <td>
               <span class="badge position-badge">{{ player.position }}</span>
             </td>
@@ -55,6 +62,9 @@
               <button class="btn btn-sm btn-info" @click="handleView(player.id)">
                 Ver
               </button>
+              <button class="btn btn-sm btn-warning" @click="handleTransfer(player.id)">
+                Traspasar
+              </button>
               <button class="btn btn-sm btn-secondary" @click="handleEdit(player.id)">
                 Editar
               </button>
@@ -70,6 +80,17 @@
 </template>
 
 <style scoped>
+.team-badge {
+  background-color: #f3e8ff;
+  color: #6b21a8;
+}
+
+.text-muted {
+  color: #9ca3af;
+  font-size: 0.875rem;
+  font-style: italic;
+}
+
 .player-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -146,6 +167,14 @@
 }
 .btn-info:hover {
   background-color: #0284c7;
+}
+
+.btn-warning {
+  background-color: #f59e0b;
+  color: white;
+}
+.btn-warning:hover {
+  background-color: #d97706;
 }
 
 .btn-secondary {
@@ -271,6 +300,10 @@ const handleView = (id: number) => {
   router.push(`/players/${id}/info`);
 };
 
+const handleTransfer = (id: number) => {
+  router.push(`/players/${id}/transfer`);
+};
+
 const handleEdit = (id: number) => {
   router.push(`/players/${id}/edit`);
 };
@@ -283,6 +316,14 @@ const confirmDelete = async (id: number) => {
       // El error es capturado por la store de Pinia
     }
   }
+};
+
+const getTeamName = (
+  team?: string | { id: number; name: string } | null
+): string | null => {
+  if (!team) return null;
+  if (typeof team === "string") return team;
+  return team.name || null;
 };
 
 const formatDate = (dateString: string | Date): string => {
