@@ -38,7 +38,7 @@ export async function addPlayerToTeam(req: Request, res: Response) {
         }
         console.error(error);
         if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'P2003') {
-            return res.status(404).json({ error: 'Team or Player not found' });
+            return res.status(404).json({ error: 'Team or player not found' });
         }
         res.status(500).json({ error: 'Error adding player to team' });
     }
