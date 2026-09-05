@@ -1,13 +1,23 @@
 import type { Player, Prisma } from '@prisma/client';
 import * as playerRepository from '../repositories/player.repository.js';
+import * as teamPlayerService from './team-player.service.js';
+import type { CreatePlayerDTO } from '../schemas/player.schema.js';
 
 /**
  * Retrieve all players from the database.
  * 
  * @returns A promise that resolves to an array of players.
  */
-export async function getAll(): Promise<Player[]> {
-    return playerRepository.findAllPlayers();
+export async function getAll() {
+    const players = await playerRepository.findAllPlayers();
+    return players.map((player) => {
+        const activeContract = player.teams?.[0];
+        return {
+            ...player,
+            currentTeam: activeContract?.team?.name ?? null,
+            currentTeamId: activeContract?.team?.id ?? null,
+        };
+    });
 }
 
 /**
@@ -21,13 +31,21 @@ export async function getById(id: number): Promise<Player | null> {
 }
 
 /**
- * Create a new player in the database.
+ * Create a new player in the database and optionally assign them to a team if teamId is provided.
  * 
- * @param data The data for the new player.
+ * @param data The validated player creation data (including optional teamId).
  * @returns A promise that resolves to the created player.
  */
-export async function create(data: Prisma.PlayerCreateInput): Promise<Player> {
-    return playerRepository.createPlayer(data);
+export async function create(data: CreatePlayerDTO): Promise<Player> {
+    const { teamId, ...playerData } = data;
+    const newPlayer = await playerRepository.createPlayer(playerData);
+    if (teamId) {
+        await teamPlayerService.addPlayerToTeam(teamId, {
+            playerId: newPlayer.id,
+            startDate: new Date(),
+        });
+    }
+    return newPlayer;
 }
 
 /**

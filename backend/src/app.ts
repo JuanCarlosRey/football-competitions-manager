@@ -7,6 +7,7 @@ import teamRoutes from "./routes/team.routes.js";
 import stadiumRoutes from "./routes/stadium.routes.js";
 import matchRoutes from "./routes/match.routes.js";
 import playerRoutes from "./routes/player.routes.js";
+import teamPlayerRoutes from "./routes/team-player.routes.js";
 
 const app = express();
 
@@ -36,5 +37,6 @@ app.use('/api/teams', teamRoutes);
 app.use('/api/stadiums', stadiumRoutes);
 app.use('/api/matches', matchRoutes);
 app.use('/api/players', playerRoutes);
+app.use('/api/teams', teamPlayerRoutes);
 
 export default app;

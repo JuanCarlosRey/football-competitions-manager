@@ -30,13 +30,14 @@ model Season {
 }
 
 model Team {
-  id           Int     @id @default(autoincrement())
+  id           Int          @id @default(autoincrement())
   name         String
   abbreviation String
   crest        String?
   president    String?
-  homeMatches  Match[] @relation("HomeTeam")
-  awayMatches  Match[] @relation("AwayTeam")
+  homeMatches  Match[]      @relation("HomeTeam")
+  awayMatches  Match[]      @relation("AwayTeam")
+  players      TeamPlayer[]
 }
 
 model Stadium {
@@ -74,6 +75,19 @@ model Player {
   preferredFoot PreferredFoot
   marketValue   Decimal?      @db.Decimal(12, 2)
   annualSalary  Decimal?      @db.Decimal(12, 2)
+  teams         TeamPlayer[]
+}
+
+model TeamPlayer {
+  id        Int       @id @default(autoincrement())
+  teamId    Int
+  playerId  Int
+  startDate DateTime
+  endDate   DateTime?
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  @@index([teamId])
+  @@index([playerId])
 }
 
 enum MatchStatus {

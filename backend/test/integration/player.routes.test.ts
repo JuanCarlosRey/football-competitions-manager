@@ -3,6 +3,8 @@ import request from 'supertest';
 import express from 'express';
 import type { Player, PreferredFoot } from '@prisma/client';
 
+process.env.DATABASE_URL = 'postgresql://mock:mock@localhost:5432/mock_db';
+
 const mockPlayerService = {
     getAll: jest.fn(),
     getById: jest.fn(),
@@ -14,6 +16,14 @@ const mockPlayerService = {
 jest.unstable_mockModule('../../src/services/player.service.js', () => ({
     ...mockPlayerService,
 }));
+    
+const mockTeamPlayerService = {
+    getPlayerCareer: jest.fn(),
+};
+
+jest.unstable_mockModule('../../src/services/team-player.service.js', () => ({
+    ...mockTeamPlayerService,
+}));
 
 const { default: playerRouter } = await import(
     '../../src/routes/player.routes.js'
@@ -22,6 +32,8 @@ const { default: playerRouter } = await import(
 const app = express();
 app.use(express.json());
 app.use('/players', playerRouter);
+
+const mockStartDate = '2023-01-01T00:00:00.000Z';
 
 const mockPlayer: Player = {
     id: 1,
@@ -233,6 +245,41 @@ describe('Player Routes', () => {
             const res = await request(app).delete('/players/1');
             expect(res.status).toBe(500);
             expect(res.body).toEqual({ error: 'Error deleting player' });
+        });
+    });
+
+    describe('GET /players/:id/career', () => {
+        it('should return career history for a player', async () => {
+            const mockCareer = [
+                {
+                    team: 'Real Madrid',
+                    startDate: mockStartDate,
+                    endDate: null,
+                },
+            ];
+            mockTeamPlayerService.getPlayerCareer.mockResolvedValue(
+                mockCareer as never
+            );
+            const res = await request(app).get('/players/100/career');
+            expect(res.status).toBe(200);
+            expect(res.body).toEqual(mockCareer);
+            expect(mockTeamPlayerService.getPlayerCareer).toHaveBeenCalledWith(100);
+        });
+
+        it('should return 400 if playerId is invalid', async () => {
+            const res = await request(app).get('/players/abc/career');
+            expect(res.status).toBe(400);
+            expect(res.body).toEqual({ error: 'Invalid player ID' });
+            expect(mockTeamPlayerService.getPlayerCareer).not.toHaveBeenCalled();
+        });
+
+        it('should return 500 if service fails', async () => {
+            mockTeamPlayerService.getPlayerCareer.mockRejectedValue(
+                new Error('DB Error') as never
+            );
+            const res = await request(app).get('/players/100/career');
+            expect(res.status).toBe(500);
+            expect(res.body).toEqual({ error: 'Error obtaining player career' });
         });
     });
 });
