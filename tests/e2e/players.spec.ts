@@ -1,8 +1,31 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Player flow', () => {
-    test('should allow completing the full CRUD flow for a player using mocks', async ({ page }) => {
-        let players = [
+    test('should allow completing the full CRUD flow for a player including team transfer using mocks', async ({ page }) => {
+        let nextPlayerId = 100;
+        const mockTeams = [
+            { id: 1, name: 'FC Barcelona' },
+            { id: 2, name: 'Real Madrid' },
+        ];
+        type MockPlayer = {
+            id: number;
+            firstName: string;
+            lastName: string;
+            birthDate: string;
+            position: string;
+            nationality: string;
+            overall: number;
+            height: number;
+            weight: number;
+            preferredFoot: string;
+            marketValue: number | null;
+            annualSalary: number | null;
+            currentTeam: string | null;
+            currentTeamId: number | null;
+            teams: { teamId: number; team: { id: number; name: string } }[];
+            playerStats: never[];
+        };
+        let players: MockPlayer[] = [
             {
                 id: 1,
                 firstName: 'Pedri',
@@ -16,9 +39,58 @@ test.describe('Player flow', () => {
                 preferredFoot: 'RIGHT',
                 marketValue: 80000000,
                 annualSalary: 9000000,
+                currentTeam: 'FC Barcelona',
+                currentTeamId: 1,
+                teams: [{ teamId: 1, team: { id: 1, name: 'FC Barcelona' } }],
                 playerStats: [],
             },
         ];
+        await page.route('**/api/teams', async (route) => {
+            if (route.request().method() === 'GET') {
+                await route.fulfill({
+                    status: 200,
+                    contentType: 'application/json',
+                    body: JSON.stringify(mockTeams),
+                });
+            } else {
+                await route.continue();
+            }
+        });
+        await page.route('**/api/team-players/player/*/career**', async (route) => {
+            if (route.request().method() === 'GET') {
+                await route.fulfill({
+                    status: 200,
+                    contentType: 'application/json',
+                    body: JSON.stringify([]),
+                });
+            } else {
+                await route.continue();
+            }
+        });
+        await page.route('**/api/team-players/transfer', async (route) => {
+            if (route.request().method() === 'POST') {
+                const payload = route.request().postDataJSON();
+                const playerIndex = players.findIndex((p) => p.id === Number(payload.playerId));
+                const newTeam = mockTeams.find((t) => t.id === Number(payload.teamId));
+                if (playerIndex !== -1 && newTeam) {
+                    players[playerIndex] = {
+                        ...players[playerIndex],
+                        currentTeam: newTeam.name,
+                        currentTeamId: newTeam.id,
+                        teams: [{ teamId: newTeam.id, team: newTeam }],
+                    };
+                    await route.fulfill({
+                        status: 200,
+                        contentType: 'application/json',
+                        body: JSON.stringify(players[playerIndex]),
+                    });
+                } else {
+                    await route.fulfill({ status: 400 });
+                }
+            } else {
+                await route.continue();
+            }
+        });
         await page.route('**/api/players', async (route) => {
             const method = route.request().method();
             if (method === 'GET') {
@@ -29,8 +101,9 @@ test.describe('Player flow', () => {
                 });
             } else if (method === 'POST') {
                 const payload = route.request().postDataJSON();
+                const assignedTeam = mockTeams.find((t) => t.id === Number(payload.teamId));
                 const newPlayer = {
-                    id: Date.now(),
+                    id: nextPlayerId++,
                     firstName: payload.firstName,
                     lastName: payload.lastName,
                     birthDate: payload.birthDate,
@@ -42,6 +115,9 @@ test.describe('Player flow', () => {
                     preferredFoot: payload.preferredFoot,
                     marketValue: payload.marketValue ?? null,
                     annualSalary: payload.annualSalary ?? null,
+                    currentTeam: assignedTeam ? assignedTeam.name : null,
+                    currentTeamId: assignedTeam ? assignedTeam.id : null,
+                    teams: assignedTeam ? [{ teamId: assignedTeam.id, team: assignedTeam }] : [],
                     playerStats: [],
                 };
                 players.push(newPlayer);
@@ -54,10 +130,10 @@ test.describe('Player flow', () => {
                 await route.continue();
             }
         });
-        await page.route(/\/api\/players\/\d+$/, async (route) => {
+        await page.route(/\/api\/players\/\d+/, async (route) => {
             const method = route.request().method();
             const url = route.request().url();
-            const id = Number(url.split('/').pop());
+            const id = Number(url.split('?')[0].split('/').pop());
             if (method === 'GET') {
                 const player = players.find((p) => p.id === id);
                 if (player) {
@@ -110,6 +186,10 @@ test.describe('Player flow', () => {
         await page.getByLabel('Peso (kg) *').fill('68');
         await page.getByLabel('Valor de Mercado (€)').fill('120000000');
         await page.getByLabel('Salario Anual (€)').fill('15000000');
+        const teamSelect = page.getByLabel(/Equipo/i);
+        if (await teamSelect.isVisible()) {
+            await teamSelect.selectOption({ label: 'FC Barcelona' });
+        }
         await page.getByRole('button', { name: 'Crear Jugador' }).click();
         await expect(page).toHaveURL('/players');
         const createdRow = page.getByRole('row', { name: new RegExp(uniqueLastName, 'i') });
@@ -121,6 +201,13 @@ test.describe('Player flow', () => {
         await expect(page.getByRole('heading', { name: new RegExp(`Lamine ${uniqueLastName}`, 'i') })).toBeVisible();
         await expect(page.getByText('Información Personal y Deportiva')).toBeVisible();
         await expect(page.getByText('Izquierdo')).toBeVisible();
+        const transferButton = page.getByRole('button', { name: /Traspasar|Cambiar Equipo/i });
+        if (await transferButton.isVisible()) {
+            await transferButton.click();
+            await page.getByLabel(/Nuevo Equipo|Equipo Destino/i).selectOption({ label: 'Real Madrid' });
+            await page.getByRole('button', { name: /Confirmar Traspaso|Guardar Traspaso/i }).click();
+            await expect(page.getByText('Real Madrid')).toBeVisible();
+        }
         await page.getByRole('button', { name: '← Volver' }).click();
         await expect(page).toHaveURL('/players');
         await page
