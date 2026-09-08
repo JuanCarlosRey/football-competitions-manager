@@ -1,4 +1,5 @@
 import { apiClient } from '../api/axios';
+import type { Match } from '../types/match';
 import type {
     Team,
     CreateTeamDTO,
@@ -6,7 +7,7 @@ import type {
 } from '../types/team';
 
 /**
- * Service for managing teams. This service provides methods to interact with the backend API for performing CRUD operations on teams, including retrieving all teams, getting a team by ID, creating a new team, updating an existing team, and deleting a team.
+ * Service for managing teams. This service provides methods to interact with the backend API for performing CRUD operations on teams, including retrieving all teams, getting a team by ID, getting matches for a team, creating a new team, updating an existing team, and deleting a team.
  */
 export const teamService = {
 
@@ -28,6 +29,17 @@ export const teamService = {
      */
     async getById(id: number): Promise<Team> {
         const response = await apiClient.get<Team>(`/teams/${id}`);
+        return response.data;
+    },
+
+    /**
+     * Retrieves all matches for a specific team by its ID from the backend API.
+     * 
+     * @param id The ID of the team whose matches to retrieve.
+     * @returns A promise resolving to an array of Match objects.
+     */
+    async getMatches(id: number): Promise<Match[]> {
+        const response = await apiClient.get<Match[]>(`/teams/${id}/matches`);
         return response.data;
     },
 

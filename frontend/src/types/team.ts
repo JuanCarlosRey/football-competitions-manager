@@ -1,4 +1,6 @@
 import type { Match } from "./match";
+import type { TeamPlayerRelation } from "./player";
+import type { Stadium } from "./stadium";
 
 /**
  * Represents a team in the system.
@@ -9,6 +11,9 @@ export interface Team {
     abbreviation: string;
     crest?: string | null;
     president?: string | null;
+    stadiumId?: number | null;
+    stadium?: Stadium | null;
+    players?: Array<TeamPlayerRelation>;
     homeMatches?: Array<Match>;
     awayMatches?: Array<Match>;
 }
@@ -21,6 +26,7 @@ export interface CreateTeamDTO {
     abbreviation: string;
     crest?: string | null;
     president?: string | null;
+    stadiumId?: number | null;
 }
 
 /**
@@ -31,4 +37,5 @@ export interface UpdateTeamDTO {
     abbreviation?: string;
     crest?: string | null;
     president?: string | null;
+    stadiumId?: number | null;
 }

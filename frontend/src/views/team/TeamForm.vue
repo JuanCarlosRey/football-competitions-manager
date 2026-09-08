@@ -52,6 +52,24 @@
           placeholder="Nombre del presidente"
         />
       </div>
+      <div class="form-group">
+        <label for="stadiumId">Estadio Habitual</label>
+        <select
+          id="stadiumId"
+          v-model="formData.stadiumId"
+          class="form-control"
+          :disabled="stadiumStore.isLoading"
+        >
+          <option :value="null">-- Sin estadio asignado --</option>
+          <option
+            v-for="stadium in stadiumStore.stadiums"
+            :key="stadium.id"
+            :value="stadium.id"
+          >
+            {{ stadium.name }} (Capacidad: {{ stadium.capacity.toLocaleString() }})
+          </option>
+        </select>
+      </div>
       <div class="form-actions">
         <button
           type="button"
@@ -113,11 +131,17 @@
   font-size: 1rem;
   outline: none;
   transition: border-color 0.2s;
+  background-color: #ffffff;
 }
 
 .form-control:focus {
   border-color: #2563eb;
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+.form-control:disabled {
+  background-color: #f3f4f6;
+  cursor: not-allowed;
 }
 
 .form-actions {
@@ -205,10 +229,12 @@
 import { ref, reactive, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useTeamStore } from "../../stores/team.store";
+import { useStadiumStore } from "../../stores/stadium.store";
 
 const route = useRoute();
 const router = useRouter();
 const teamStore = useTeamStore();
+const stadiumStore = useStadiumStore();
 
 const teamId = computed(() => {
   const id = route.params.id;
@@ -218,14 +244,22 @@ const teamId = computed(() => {
 const isEditing = computed(() => !!teamId.value);
 const error = ref<string | null>(null);
 
-const formData = reactive({
+const formData = reactive<{
+  name: string;
+  abbreviation: string;
+  crest: string;
+  president: string;
+  stadiumId: number | null;
+}>({
   name: "",
   abbreviation: "",
   crest: "",
   president: "",
+  stadiumId: null,
 });
 
 onMounted(async () => {
+  await stadiumStore.fetchStadiums();
   if (isEditing.value && teamId.value) {
     await teamStore.fetchTeamById(teamId.value);
     const team = teamStore.currentTeam;
@@ -234,6 +268,7 @@ onMounted(async () => {
       formData.abbreviation = team.abbreviation;
       formData.crest = team.crest || "";
       formData.president = team.president || "";
+      formData.stadiumId = team.stadium?.id ?? team.stadiumId ?? null;
     } else {
       error.value = "No se encontró el equipo especificado";
     }
@@ -252,6 +287,7 @@ const handleSubmit = async () => {
       abbreviation: formData.abbreviation.trim().toUpperCase(),
       crest: formData.crest.trim() || null,
       president: formData.president.trim() || null,
+      stadiumId: formData.stadiumId ? Number(formData.stadiumId) : null,
     };
     if (isEditing.value && teamId.value) {
       await teamStore.updateTeam(teamId.value, payload);

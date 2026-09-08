@@ -10,21 +10,26 @@
         <button class="btn btn-danger" @click="confirmDelete">Eliminar</button>
       </div>
     </header>
+
     <div v-if="stadiumStore.error" class="alert alert-danger">
       <span>{{ stadiumStore.error }}</span>
       <button class="btn-close" @click="stadiumStore.clearError()">✕</button>
     </div>
+
     <div v-if="stadiumStore.isLoading" class="loading-state">
       <div class="spinner"></div>
       <p>Cargando detalles del estadio...</p>
     </div>
+
     <div
       v-else-if="!stadiumStore.isLoading && !stadiumStore.currentStadium"
       class="empty-state"
     >
       <p>No se encontró la información de este estadio.</p>
     </div>
+
     <div v-else-if="stadiumStore.currentStadium" class="detail-content">
+      <!-- Información General del Estadio -->
       <div class="info-card">
         <h2>Información General</h2>
         <div class="info-grid">
@@ -52,6 +57,67 @@
           </div>
         </div>
       </div>
+
+      <!-- Equipos Habituales -->
+      <div class="table-container">
+        <div class="table-header">
+          <h2>Equipos que juegan en este estadio</h2>
+        </div>
+        <div
+          v-if="
+            stadiumStore.currentStadium.teams &&
+            stadiumStore.currentStadium.teams.length > 0
+          "
+        >
+          <table class="stadium-table">
+            <thead>
+              <tr>
+                <th>Escudo</th>
+                <th>Nombre</th>
+                <th>Abreviatura</th>
+                <th>Presidente</th>
+                <th class="text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="team in stadiumStore.currentStadium.teams"
+                :key="team.id"
+              >
+                <td>
+                  <div class="crest-container">
+                    <img
+                      v-if="team.crest"
+                      :src="team.crest"
+                      :alt="`Escudo de ${team.name}`"
+                      class="crest-img"
+                    />
+                    <span v-else class="crest-placeholder">-</span>
+                  </div>
+                </td>
+                <td class="font-bold">{{ team.name }}</td>
+                <td>
+                  <span class="badge">{{ team.abbreviation }}</span>
+                </td>
+                <td>{{ team.president || "-" }}</td>
+                <td class="text-right">
+                  <button
+                    class="btn btn-sm btn-info"
+                    @click="handleViewTeam(team.id)"
+                  >
+                    Ver Equipo
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div v-else class="empty-section-state">
+          <p>No hay equipos asignados a este estadio actualmente.</p>
+        </div>
+      </div>
+
+      <!-- Próximos Partidos -->
       <div
         v-if="
           stadiumStore.currentStadium.matches &&
@@ -72,7 +138,10 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="match in stadiumStore.currentStadium.matches" :key="match.id">
+            <tr
+              v-for="match in stadiumStore.currentStadium.matches"
+              :key="match.id"
+            >
               <td>{{ match.id }}</td>
               <td>{{ formatDate(match.dateTime) }}</td>
               <td class="font-bold">
@@ -113,6 +182,10 @@ const handleBack = () => {
 
 const handleEdit = () => {
   router.push(`/stadiums/${stadiumId}/edit`);
+};
+
+const handleViewTeam = (teamId: number) => {
+  router.push(`/teams/${teamId}/info`);
 };
 
 const confirmDelete = async () => {
@@ -214,21 +287,6 @@ const formatDate = (dateString: string): string => {
   font-weight: 500;
 }
 
-.teams-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.team-chip {
-  background-color: #f3f4f6;
-  color: #1f2937;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  font-weight: 500;
-  border: 1px solid #e5e7eb;
-}
-
 .table-container {
   background: #ffffff;
   border-radius: 8px;
@@ -250,12 +308,34 @@ const formatDate = (dateString: string): string => {
 .stadium-table td {
   padding: 1rem 1.5rem;
   border-bottom: 1px solid #e5e7eb;
+  vertical-align: middle;
 }
 
 .stadium-table th {
   background-color: #f9fafb;
   font-weight: 600;
   color: #374151;
+}
+
+.crest-container {
+  display: flex;
+  align-items: center;
+  width: 32px;
+  height: 32px;
+}
+
+.crest-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.crest-placeholder {
+  color: #9ca3af;
+}
+
+.text-right {
+  text-align: right;
 }
 
 .actions {
@@ -286,6 +366,14 @@ const formatDate = (dateString: string): string => {
 }
 .btn-danger:hover {
   background-color: #dc2626;
+}
+
+.btn-info {
+  background-color: #0ea5e9;
+  color: white;
+}
+.btn-info:hover {
+  background-color: #0284c7;
 }
 
 .btn-sm {
@@ -325,9 +413,10 @@ const formatDate = (dateString: string): string => {
 }
 
 .loading-state,
-.empty-state {
+.empty-state,
+.empty-section-state {
   text-align: center;
-  padding: 3rem;
+  padding: 2rem 1.5rem;
   color: #6b7280;
 }
 
