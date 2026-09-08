@@ -10,26 +10,21 @@
         <button class="btn btn-danger" @click="confirmDelete">Eliminar</button>
       </div>
     </header>
-
     <div v-if="stadiumStore.error" class="alert alert-danger">
       <span>{{ stadiumStore.error }}</span>
       <button class="btn-close" @click="stadiumStore.clearError()">✕</button>
     </div>
-
     <div v-if="stadiumStore.isLoading" class="loading-state">
       <div class="spinner"></div>
       <p>Cargando detalles del estadio...</p>
     </div>
-
     <div
       v-else-if="!stadiumStore.isLoading && !stadiumStore.currentStadium"
       class="empty-state"
     >
       <p>No se encontró la información de este estadio.</p>
     </div>
-
     <div v-else-if="stadiumStore.currentStadium" class="detail-content">
-      <!-- Información General del Estadio -->
       <div class="info-card">
         <h2>Información General</h2>
         <div class="info-grid">
@@ -57,8 +52,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Equipos Habituales -->
       <div class="table-container">
         <div class="table-header">
           <h2>Equipos que juegan en este estadio</h2>
@@ -116,8 +109,6 @@
           <p>No hay equipos asignados a este estadio actualmente.</p>
         </div>
       </div>
-
-      <!-- Próximos Partidos -->
       <div
         v-if="
           stadiumStore.currentStadium.matches &&
@@ -158,59 +149,6 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { onMounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { useStadiumStore } from "../../stores/stadium.store";
-
-const stadiumStore = useStadiumStore();
-const route = useRoute();
-const router = useRouter();
-
-const stadiumId = Number(route.params.id);
-
-onMounted(() => {
-  if (stadiumId) {
-    stadiumStore.fetchStadiumById(stadiumId);
-  }
-});
-
-const handleBack = () => {
-  router.push("/stadiums");
-};
-
-const handleEdit = () => {
-  router.push(`/stadiums/${stadiumId}/edit`);
-};
-
-const handleViewTeam = (teamId: number) => {
-  router.push(`/teams/${teamId}/info`);
-};
-
-const confirmDelete = async () => {
-  if (confirm(`¿Estás seguro de que deseas eliminar el estadio con ID ${stadiumId}?`)) {
-    try {
-      await stadiumStore.deleteStadium(stadiumId);
-      router.push("/stadiums");
-    } catch {
-      // El mensaje de error se captura en la store
-    }
-  }
-};
-
-const formatDate = (dateString: string): string => {
-  try {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat("es-ES", {
-      dateStyle: "short",
-      timeStyle: "short",
-    }).format(date);
-  } catch {
-    return dateString;
-  }
-};
-</script>
 
 <style scoped>
 .stadium-container {
@@ -439,3 +377,56 @@ const formatDate = (dateString: string): string => {
   }
 }
 </style>
+
+<script setup lang="ts">
+import { onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useStadiumStore } from "../../stores/stadium.store";
+
+const stadiumStore = useStadiumStore();
+const route = useRoute();
+const router = useRouter();
+
+const stadiumId = Number(route.params.id);
+
+onMounted(() => {
+  if (stadiumId) {
+    stadiumStore.fetchStadiumById(stadiumId);
+  }
+});
+
+const handleBack = () => {
+  router.push("/stadiums");
+};
+
+const handleEdit = () => {
+  router.push(`/stadiums/${stadiumId}/edit`);
+};
+
+const handleViewTeam = (teamId: number) => {
+  router.push(`/teams/${teamId}/info`);
+};
+
+const confirmDelete = async () => {
+  if (confirm(`¿Estás seguro de que deseas eliminar el estadio con ID ${stadiumId}?`)) {
+    try {
+      await stadiumStore.deleteStadium(stadiumId);
+      router.push("/stadiums");
+    } catch {
+      // El mensaje de error se captura en la store
+    }
+  }
+};
+
+const formatDate = (dateString: string): string => {
+  try {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("es-ES", {
+      dateStyle: "short",
+      timeStyle: "short",
+    }).format(date);
+  } catch {
+    return dateString;
+  }
+};
+</script>
