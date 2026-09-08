@@ -35,6 +35,8 @@ model Team {
   abbreviation String
   crest        String?
   president    String?
+  stadiumId    Int?         
+  stadium      Stadium?     @relation(fields: [stadiumId], references: [id])
   homeMatches  Match[]      @relation("HomeTeam")
   awayMatches  Match[]      @relation("AwayTeam")
   players      TeamPlayer[]
@@ -46,6 +48,7 @@ model Stadium {
   capacity Int
   address  String
   matches  Match[]
+  teams    Team[]
 }
 
 model Match {

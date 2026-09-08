@@ -1,4 +1,4 @@
-import type { Team, Prisma } from '@prisma/client';
+import type { Team, Prisma, Match } from '@prisma/client';
 import * as teamRepository from '../repositories/team.repository.js';
 
 /**
@@ -18,6 +18,20 @@ export async function getAll(): Promise<Team[]> {
  */
 export async function getById(id: number): Promise<Team | null> {
     return teamRepository.findTeamById(id);
+}
+
+/**
+ * Retrieve all matches for a specific team.
+ * 
+ * @param teamId The ID of the team to retrieve matches for.
+ * @returns A promise that resolves to an array of matches or null if the team does not exist.
+ */
+export async function getTeamMatches(teamId: number): Promise<Match[] | null> {
+    const teamExists = await teamRepository.findTeamById(teamId);
+    if (!teamExists) {
+        return null;
+    }
+    return teamRepository.findMatchesByTeamId(teamId);
 }
 
 /**

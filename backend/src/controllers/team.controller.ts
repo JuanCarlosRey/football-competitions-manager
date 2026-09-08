@@ -30,6 +30,23 @@ export async function getTeamById(req: Request, res: Response) {
     }
 }
 
+export async function getTeamMatches(req: Request, res: Response) {
+    try {
+        const id = Number(req.params.id);
+        if (isNaN(id)) {
+            return res.status(400).json({ error: 'Invalid team ID' });
+        }
+        const matches = await teamService.getTeamMatches(id);
+        if (matches === null) {
+            return res.status(404).json({ error: 'Team not found' });
+        }
+        res.json(matches);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error obtaining team matches' });
+    }
+}
+
 export async function createTeam(req: Request, res: Response) {
     try {
         const validatedData = createTeamSchema.parse(req.body);
