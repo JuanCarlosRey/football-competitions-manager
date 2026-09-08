@@ -43,6 +43,10 @@
             <strong>Presidente:</strong>
             {{ teamStore.currentTeam.president || "No especificado" }}
           </p>
+          <p class="stadium-text">
+            <strong>Estadio Habitual:</strong>
+            {{ teamStore.currentTeam.stadium?.name || "Sin estadio asignado" }}
+          </p>
         </div>
       </div>
       <div class="info-card">
@@ -67,93 +71,113 @@
             <span class="value">{{ teamStore.currentTeam.president || "-" }}</span>
           </div>
         </div>
+        <div v-if="teamStore.currentTeam.stadium" class="stadium-details mt-4">
+          <h3 class="subsection-title">Estadio Habitual</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="label">Nombre</span>
+              <span class="value font-bold">{{
+                teamStore.currentTeam.stadium.name
+              }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Capacidad</span>
+              <span class="value"
+                >{{
+                  teamStore.currentTeam.stadium.capacity.toLocaleString()
+                }}
+                espectadores</span
+              >
+            </div>
+            <div class="info-item">
+              <span class="label">Dirección</span>
+              <span class="value">{{
+                teamStore.currentTeam.stadium.address || "-"
+              }}</span>
+            </div>
+          </div>
+        </div>
       </div>
-      <div
-        v-if="
-          teamStore.currentTeam.homeMatches &&
-          teamStore.currentTeam.homeMatches.length > 0
-        "
-        class="table-container"
-      >
+      <div class="table-container">
+        <div class="table-header">
+          <h2>Plantilla de Jugadores</h2>
+        </div>
+        <div
+          v-if="teamStore.currentTeam.players && teamStore.currentTeam.players.length > 0"
+        >
+          <table class="team-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Posición</th>
+                <th>Nacionalidad</th>
+                <th>Media (Overall)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="relation in teamStore.currentTeam.players" :key="relation.id">
+                <td>
+                  <span class="badge-number"
+                    >#{{ relation.player?.id ?? relation.playerId }}</span
+                  >
+                </td>
+                <td class="font-bold">
+                  {{
+                    relation.player
+                      ? `${relation.player.firstName} ${relation.player.lastName}`
+                      : "-"
+                  }}
+                </td>
+                <td>{{ relation.player?.position || "No especificada" }}</td>
+                <td>{{ relation.player?.nationality || "-" }}</td>
+                <td>
+                  <span class="badge">{{ relation.player?.overall ?? "-" }}</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div v-else class="empty-section-state">
+          <p>No hay jugadores registrados en este equipo.</p>
+        </div>
+      </div>
+      <div class="table-container">
         <div class="table-header">
           <h2>Partidos del Equipo</h2>
         </div>
-        <table class="team-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Fecha</th>
-              <th>Encuentro</th>
-              <th>Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="match in teamStore.currentTeam.homeMatches" :key="match.id">
-              <td>{{ match.id }}</td>
-              <td>{{ formatDate(match.dateTime) }}</td>
-              <td class="font-bold">
-                {{ match.homeTeam?.name || `Equipo ${match.homeTeamId}` }} vs
-                {{ match.awayTeam?.name || `Equipo ${match.awayTeamId}` }}
-              </td>
-              <td>
-                <span class="badge">{{ match.status }}</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <div v-if="teamStore.currentTeamMatches.length > 0">
+          <table class="team-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Fecha</th>
+                <th>Encuentro</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="match in teamStore.currentTeamMatches" :key="match.id">
+                <td>#{{ match.id }}</td>
+                <td>{{ formatDate(match.dateTime) }}</td>
+                <td class="font-bold">
+                  {{ match.homeTeam?.name || `Equipo ${match.homeTeamId}` }} vs
+                  {{ match.awayTeam?.name || `Equipo ${match.awayTeamId}` }}
+                </td>
+                <td>
+                  <span class="badge">{{ match.status }}</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div v-else class="empty-section-state">
+          <p>No se encontraron partidos programados o jugados por este equipo.</p>
+        </div>
       </div>
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { onMounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { useTeamStore } from "../../stores/team.store";
-
-const teamStore = useTeamStore();
-const route = useRoute();
-const router = useRouter();
-
-const teamId = Number(route.params.id);
-
-onMounted(() => {
-  if (teamId) {
-    teamStore.fetchTeamById(teamId);
-  }
-});
-
-const handleBack = () => {
-  router.push("/teams");
-};
-
-const handleEdit = () => {
-  router.push(`/teams/${teamId}/edit`);
-};
-
-const confirmDelete = async () => {
-  if (confirm(`¿Estás seguro de que deseas eliminar el equipo con ID ${teamId}?`)) {
-    try {
-      await teamStore.deleteTeam(teamId);
-      router.push("/teams");
-    } catch {
-      // El mensaje de error se captura en la store
-    }
-  }
-};
-
-const formatDate = (dateString: string): string => {
-  try {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat("es-ES", {
-      dateStyle: "short",
-      timeStyle: "short",
-    }).format(date);
-  } catch {
-    return dateString;
-  }
-};
-</script>
 
 <style scoped>
 .team-container {
@@ -251,6 +275,18 @@ const formatDate = (dateString: string): string => {
   font-size: 1.25rem;
   color: #111827;
   margin-bottom: 1rem;
+}
+
+.subsection-title {
+  font-size: 1rem;
+  color: #374151;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid #f3f4f6;
+  padding-bottom: 0.25rem;
+}
+
+.mt-4 {
+  margin-top: 1.5rem;
 }
 
 .info-grid {
@@ -359,6 +395,9 @@ const formatDate = (dateString: string): string => {
   border-radius: 4px;
   font-weight: 600;
   font-size: 0.875rem;
+  display: inline-block;
+  min-width: 24px;
+  text-align: center;
 }
 
 .alert {
@@ -384,9 +423,10 @@ const formatDate = (dateString: string): string => {
 }
 
 .loading-state,
-.empty-state {
+.empty-state,
+.empty-section-state {
   text-align: center;
-  padding: 3rem;
+  padding: 2rem 1.5rem;
   color: #6b7280;
 }
 
@@ -409,3 +449,55 @@ const formatDate = (dateString: string): string => {
   }
 }
 </style>
+
+<script setup lang="ts">
+import { onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useTeamStore } from "../../stores/team.store";
+
+const teamStore = useTeamStore();
+const route = useRoute();
+const router = useRouter();
+
+const teamId = Number(route.params.id);
+
+onMounted(async () => {
+  if (teamId) {
+    await teamStore.fetchTeamById(teamId);
+    await teamStore.fetchTeamMatches(teamId);
+  }
+  console.log(teamStore.currentTeam?.players);
+});
+
+const handleBack = () => {
+  router.push("/teams");
+};
+
+const handleEdit = () => {
+  router.push(`/teams/${teamId}/edit`);
+};
+
+const confirmDelete = async () => {
+  if (confirm(`¿Estás seguro de que deseas eliminar el equipo con ID ${teamId}?`)) {
+    try {
+      await teamStore.deleteTeam(teamId);
+      router.push("/teams");
+    } catch {
+      // El mensaje de error se captura en la store
+    }
+  }
+};
+
+const formatDate = (dateString?: string): string => {
+  if (!dateString) return "Pendiente";
+  try {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("es-ES", {
+      dateStyle: "short",
+      timeStyle: "short",
+    }).format(date);
+  } catch {
+    return dateString;
+  }
+};
+</script>

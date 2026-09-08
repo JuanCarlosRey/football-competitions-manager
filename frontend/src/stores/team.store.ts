@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
+import type { Match } from '../types/match';
 import type {
     Team,
     CreateTeamDTO,
@@ -8,11 +9,12 @@ import type {
 import { teamService } from '../services/team.service';
 
 /**
- * Pinia store for managing teams. This store provides state management for teams, including fetching, creating, updating, and deleting teams. It also handles loading states and error messages.
+ * Pinia store for managing teams. This store provides state management for teams, including fetching teams, team matches, creating, updating, and deleting teams. It also handles loading states and error messages.
  */
 export const useTeamStore = defineStore('team', () => {
     const teams = ref<Team[]>([]);
     const currentTeam = ref<Team | null>(null);
+    const currentTeamMatches = ref<Match[]>([]);
     const isLoading = ref<boolean>(false);
     const error = ref<string | null>(null);
 
@@ -42,6 +44,21 @@ export const useTeamStore = defineStore('team', () => {
         } catch (err: unknown) {
             error.value = (err as { response?: { data?: { error?: string } } }).response?.data?.error || `Error al obtener el equipo con ID ${id}`;
             console.error(err);
+        } finally {
+            isLoading.value = false;
+        }
+    }
+
+    async function fetchTeamMatches(id: number) {
+        isLoading.value = true;
+        error.value = null;
+        try {
+            currentTeamMatches.value = await teamService.getMatches(id);
+            return currentTeamMatches.value;
+        } catch (err: unknown) {
+            error.value = (err as { response?: { data?: { error?: string } } }).response?.data?.error || `Error al obtener los partidos del equipo con ID ${id}`;
+            console.error(err);
+            throw err;
         } finally {
             isLoading.value = false;
         }
@@ -110,12 +127,14 @@ export const useTeamStore = defineStore('team', () => {
     return {
         teams,
         currentTeam,
+        currentTeamMatches,
         isLoading,
         error,
         totalTeams,
         getTeamByIdFromState,
         fetchTeams,
         fetchTeamById,
+        fetchTeamMatches,
         createTeam,
         updateTeam,
         deleteTeam,

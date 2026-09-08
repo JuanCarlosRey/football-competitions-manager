@@ -2,12 +2,27 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Stadium flow', () => {
     test('should allow completing the full CRUD flow for a stadium using mocks', async ({ page }) => {
-        let stadiums = [
+        type Stadium = {
+            id: number;
+            name: string;
+            capacity: number;
+            address: string;
+            teams?: Array<{
+                id: number;
+                name: string;
+                abbreviation: string;
+                crest: string | null;
+                president: string | null;
+            }>;
+            matches: never[];
+        };
+        let stadiums: Stadium[] = [
             {
                 id: 1,
                 name: 'Santiago Bernabéu',
                 capacity: 81044,
                 address: 'Av. de Concha Espina, 1, Madrid',
+                teams: [],
                 matches: [],
             },
         ];
@@ -29,11 +44,12 @@ test.describe('Stadium flow', () => {
                     });
                     return;
                 }
-                const newStadium = {
+                const newStadium: Stadium = {
                     id: Date.now(),
                     name: payload.name,
                     capacity: payload.capacity,
                     address: payload.address,
+                    teams: [],
                     matches: [],
                 };
                 stadiums.push(newStadium);
@@ -104,6 +120,8 @@ test.describe('Stadium flow', () => {
         await expect(page.getByRole('heading', { name: 'Información General' })).toBeVisible();
         await expect(page.getByText(/99[,.]354 espectadores/)).toBeVisible();
         await expect(page.getByText("C/ d'Aristides Maillol, 12, Barcelona")).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Equipos que juegan en este estadio' })).toBeVisible();
+        await expect(page.getByText('No hay equipos asignados a este estadio actualmente.')).toBeVisible();
         await page.getByRole('button', { name: 'Editar' }).click();
         await expect(page).toHaveURL(/\/stadiums\/\d+\/edit/);
         await expect(page.getByRole('heading', { name: 'Editar Estadio' })).toBeVisible();

@@ -6,6 +6,7 @@ import type { Team } from '@prisma/client';
 const mockTeamService = {
     getAll: jest.fn(),
     getById: jest.fn(),
+    getTeamMatches: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
     deleteTeam: jest.fn(),
@@ -29,10 +30,18 @@ const mockTeam: Team = {
     abbreviation: 'RMA',
     crest: 'https://example.com/crests/rma.png',
     president: 'Florentino Pérez',
+    stadiumId: 1,
 };
 
 const mockTeamWithRelations = {
     ...mockTeam,
+    stadium: {
+        id: 1,
+        name: 'Santiago Bernabéu',
+        capacity: 81044,
+        address: 'Av. de Concha Espina 1',
+    },
+    players: [],
     homeMatches: [],
     awayMatches: [],
 };
@@ -77,6 +86,7 @@ describe('Team Routes', () => {
             expect(res.status).toBe(200);
             expect(res.body.id).toBe(1);
             expect(res.body.name).toBe('Real Madrid');
+            expect(res.body.stadiumId).toBe(1);
             expect(mockTeamService.getById).toHaveBeenCalledWith(1);
         });
 
@@ -102,6 +112,41 @@ describe('Team Routes', () => {
         });
     });
 
+    describe('GET /teams/:id/matches', () => {
+        it('should return 200 and matches array when team exists', async () => {
+            const mockMatches = [
+                { id: 101, homeTeamId: 1, awayTeamId: 2, stadiumId: 1 },
+            ];
+            mockTeamService.getTeamMatches.mockResolvedValue(mockMatches as never);
+            const res = await request(app).get('/teams/1/matches');
+            expect(res.status).toBe(200);
+            expect(res.body).toEqual(mockMatches);
+            expect(mockTeamService.getTeamMatches).toHaveBeenCalledWith(1);
+        });
+
+        it('should return 400 if team ID is invalid', async () => {
+            const res = await request(app).get('/teams/invalid-id/matches');
+            expect(res.status).toBe(400);
+            expect(res.body).toEqual({ error: 'Invalid team ID' });
+            expect(mockTeamService.getTeamMatches).not.toHaveBeenCalled();
+        });
+
+        it('should return 404 if team does not exist', async () => {
+            mockTeamService.getTeamMatches.mockResolvedValue(null as never);
+            const res = await request(app).get('/teams/999/matches');
+            expect(res.status).toBe(404);
+            expect(res.body).toEqual({ error: 'Team not found' });
+            expect(mockTeamService.getTeamMatches).toHaveBeenCalledWith(999);
+        });
+
+        it('should return 500 if the service fails', async () => {
+            mockTeamService.getTeamMatches.mockRejectedValue(new Error('DB error') as never);
+            const res = await request(app).get('/teams/1/matches');
+            expect(res.status).toBe(500);
+            expect(res.body).toEqual({ error: 'Error obtaining team matches' });
+        });
+    });
+
     describe('POST /teams', () => {
         it('should return 201 and the created team', async () => {
             const input = {
@@ -109,6 +154,7 @@ describe('Team Routes', () => {
                 abbreviation: 'RMA',
                 crest: 'https://example.com/crests/rma.png',
                 president: 'Florentino Pérez',
+                stadiumId: 1,
             };
             const created = {
                 ...mockTeam,
@@ -132,6 +178,19 @@ describe('Team Routes', () => {
             expect(mockTeamService.create).not.toHaveBeenCalled();
         });
 
+        it('should return 400 if stadiumId is not a valid number', async () => {
+            const res = await request(app)
+                .post('/teams')
+                .send({
+                    name: 'Real Madrid',
+                    abbreviation: 'RMA',
+                    stadiumId: 'invalid-id',
+                });
+            expect(res.status).toBe(400);
+            expect(res.body).toHaveProperty('errors');
+            expect(mockTeamService.create).not.toHaveBeenCalled();
+        });
+
         it('should return 500 if the service fails', async () => {
             mockTeamService.create.mockRejectedValue(new Error('DB error') as never);
             const res = await request(app)
@@ -147,8 +206,8 @@ describe('Team Routes', () => {
 
     describe('PUT /teams/:id', () => {
         it('should return 200 and the updated team', async () => {
-            const input = { president: 'New President' };
-            const updated = { ...mockTeam, president: 'New President' };
+            const input = { president: 'New President', stadiumId: 2 };
+            const updated = { ...mockTeam, ...input };
             mockTeamService.update.mockResolvedValue(updated as never);
             const res = await request(app)
                 .put('/teams/1')
