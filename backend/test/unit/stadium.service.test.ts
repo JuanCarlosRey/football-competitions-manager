@@ -37,17 +37,19 @@ describe('Stadium Service', () => {
 
     const mockStadiumWithRelations = {
         ...mockStadium,
+        teams: [],
         matches: [],
     };
 
     describe('getAll', () => {
-        it('should return all stadiums including matches relation', async () => {
+        it('should return all stadiums including teams and matches relations', async () => {
             mockPrisma.stadium.findMany.mockResolvedValue([
                 mockStadiumWithRelations,
             ] as never);
             const result = await getAll();
             expect(mockPrisma.stadium.findMany).toHaveBeenCalledWith({
                 include: {
+                    teams: true,
                     matches: true,
                 },
             });
@@ -62,7 +64,7 @@ describe('Stadium Service', () => {
     });
 
     describe('getById', () => {
-        it('should return a stadium by id including matches', async () => {
+        it('should return a stadium by id including teams and matches', async () => {
             mockPrisma.stadium.findUnique.mockResolvedValue(
                 mockStadiumWithRelations as never
             );
@@ -70,6 +72,7 @@ describe('Stadium Service', () => {
             expect(mockPrisma.stadium.findUnique).toHaveBeenCalledWith({
                 where: { id: 1 },
                 include: {
+                    teams: true,
                     matches: true,
                 },
             });
@@ -90,12 +93,16 @@ describe('Stadium Service', () => {
                 capacity: 81044,
                 address: 'Av. de Concha Espina 1, Madrid',
             };
-            mockPrisma.stadium.create.mockResolvedValue(mockStadium as never);
+            mockPrisma.stadium.create.mockResolvedValue(mockStadiumWithRelations as never);
             const result = await create(createData);
             expect(mockPrisma.stadium.create).toHaveBeenCalledWith({
                 data: createData,
+                include: {
+                    teams: true,
+                    matches: true,
+                },
             });
-            expect(result).toEqual(mockStadium);
+            expect(result).toEqual(mockStadiumWithRelations);
         });
     });
 
@@ -105,7 +112,7 @@ describe('Stadium Service', () => {
                 capacity: 85000,
             };
             const updatedStadium = {
-                ...mockStadium,
+                ...mockStadiumWithRelations,
                 capacity: 85000,
             };
             mockPrisma.stadium.update.mockResolvedValue(updatedStadium as never);
@@ -113,6 +120,10 @@ describe('Stadium Service', () => {
             expect(mockPrisma.stadium.update).toHaveBeenCalledWith({
                 where: { id: 1 },
                 data: updateData,
+                include: {
+                    teams: true,
+                    matches: true,
+                },
             });
             expect(result).toEqual(updatedStadium);
         });
