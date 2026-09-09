@@ -17,6 +17,7 @@ import StadiumDetail from "../views/stadium/StadiumDetail.vue";
 import MatchView from "../views/match/MatchView.vue";
 import MatchForm from "../views/match/MatchForm.vue";
 import MatchDetail from "../views/match/MatchDetail.vue";
+import MatchLineupForm from "../views/match/MatchLineupForm.vue";
 import PlayerView from "../views/player/PlayerView.vue";
 import PlayerForm from "../views/player/PlayerForm.vue";
 import PlayerDetail from "../views/player/PlayerDetail.vue";
@@ -151,6 +152,11 @@ const router = createRouter({
             path: "/matches/:id/info",
             name: "match-info",
             component: MatchDetail,
+        },
+        {
+            path: "/matches/:id/lineup",
+            name: "match-lineup-form",
+            component: MatchLineupForm,
         },
         {
             path: "/players",

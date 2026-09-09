@@ -19,7 +19,7 @@ export interface Player {
     preferredFoot: PreferredFoot;
     marketValue?: number | null;
     annualSalary?: number | null;
-    currentTeam?: string | { id: number; name: string } | null;
+    currentTeam?: { id: number; name: string } | null;
 }
 
 /**

@@ -66,6 +66,110 @@
           </div>
         </div>
       </div>
+      <div class="lineups-card">
+        <div class="lineups-header">
+          <h2>Alineaciones</h2>
+          <button
+            v-if="activeTeamId"
+            class="btn btn-primary btn-sm"
+            @click="handleManageLineup(activeTeamId)"
+          >
+            {{
+              activeTeamLineup.length > 0 ? "Editar Alineación" : "+ Añadir Alineación"
+            }}
+          </button>
+        </div>
+        <div class="team-tabs">
+          <button
+            class="tab-btn"
+            :class="{ active: activeTeamTab === 'home' }"
+            @click="activeTeamTab = 'home'"
+          >
+            {{ matchStore.currentMatch.homeTeam?.name || "Local" }}
+          </button>
+          <button
+            class="tab-btn"
+            :class="{ active: activeTeamTab === 'away' }"
+            @click="activeTeamTab = 'away'"
+          >
+            {{ matchStore.currentMatch.awayTeam?.name || "Visitante" }}
+          </button>
+        </div>
+        <div class="lineup-content">
+          <div v-if="activeTeamLineup.length === 0" class="empty-lineup">
+            <p>No se ha registrado alineación para este equipo.</p>
+            <button
+              v-if="activeTeamId"
+              class="btn btn-secondary btn-sm"
+              @click="handleManageLineup(activeTeamId)"
+            >
+              Crear Alineación Ahora
+            </button>
+          </div>
+          <div v-else class="lineup-tables-grid">
+            <div class="lineup-section">
+              <h3 class="section-subtitle">Titulares ({{ startersList.length }})</h3>
+              <div class="table-wrapper">
+                <table class="lineup-table">
+                  <thead>
+                    <tr>
+                      <th class="col-num">#</th>
+                      <th>Jugador</th>
+                      <th>Posición</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="player in startersList" :key="player.id">
+                      <td class="col-num font-bold">{{ player.shirtNumber ?? "-" }}</td>
+                      <td>{{ player.player?.firstName }} {{ player.player?.lastName }}</td>
+                      <td>
+                        <span class="position-badge">{{
+                          formatPosition(player.position ?? undefined)
+                        }}</span>
+                      </td>
+                    </tr>
+                    <tr v-if="startersList.length === 0">
+                      <td colspan="3" class="text-muted text-center">
+                        Sin titulares definidos
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="lineup-section">
+              <h3 class="section-subtitle">Suplentes ({{ substitutesList.length }})</h3>
+              <div class="table-wrapper">
+                <table class="lineup-table">
+                  <thead>
+                    <tr>
+                      <th class="col-num">#</th>
+                      <th>Jugador</th>
+                      <th>Posición</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="player in substitutesList" :key="player.id">
+                      <td class="col-num font-bold">{{ player.shirtNumber ?? "-" }}</td>
+                      <td>{{ player.player?.firstName }} {{ player.player?.lastName }}</td>
+                      <td>
+                        <span class="position-badge">{{
+                          formatPosition(player.position ?? undefined)
+                        }}</span>
+                      </td>
+                    </tr>
+                    <tr v-if="substitutesList.length === 0">
+                      <td colspan="3" class="text-muted text-center">
+                        Sin suplentes definidos
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="info-card">
         <h2>Detalles del Evento</h2>
         <div class="info-grid">
@@ -203,6 +307,122 @@
   color: #9ca3af;
 }
 
+/* Estilos de Alineaciones */
+.lineups-card {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.lineups-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.lineups-header h2 {
+  font-size: 1.25rem;
+  color: #111827;
+  margin: 0;
+}
+
+.team-tabs {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 2px solid #f3f4f6;
+  margin-bottom: 1.25rem;
+}
+
+.tab-btn {
+  padding: 0.625rem 1.25rem;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+  margin-bottom: -2px;
+  transition: all 0.2s;
+}
+
+.tab-btn.active {
+  color: #2563eb;
+  border-bottom-color: #2563eb;
+}
+
+.empty-lineup {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  background-color: #f9fafb;
+  border-radius: 6px;
+  color: #6b7280;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.lineup-tables-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.section-subtitle {
+  font-size: 1rem;
+  color: #374151;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 0.375rem;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.lineup-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.lineup-table th,
+.lineup-table td {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.lineup-table th {
+  background-color: #f9fafb;
+  color: #4b5563;
+  font-weight: 600;
+}
+
+.col-num {
+  width: 40px;
+  text-align: center;
+}
+
+.position-badge {
+  display: inline-block;
+  padding: 0.125rem 0.375rem;
+  background-color: #f3f4f6;
+  color: #4b5563;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+
+.text-muted {
+  color: #9ca3af;
+}
+
+.text-center {
+  text-align: center;
+}
+
 .info-card {
   background: #ffffff;
   border-radius: 8px;
@@ -256,6 +476,14 @@
   transition: background-color 0.2s;
 }
 
+.btn-primary {
+  background-color: #2563eb;
+  color: white;
+}
+.btn-primary:hover {
+  background-color: #1d4ed8;
+}
+
 .btn-secondary {
   background-color: #e5e7eb;
   color: #374151;
@@ -273,7 +501,7 @@
 }
 
 .btn-sm {
-  padding: 0.25rem 0.5rem;
+  padding: 0.375rem 0.75rem;
   font-size: 0.875rem;
 }
 
@@ -354,20 +582,25 @@
 </style>
 
 <script setup lang="ts">
-import { onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useMatchStore } from "../../stores/match.store";
 import type { MatchStatus } from "../../types/match";
+import type { MatchLineup } from "../../types/match-lineup";
 
 const matchStore = useMatchStore();
 const route = useRoute();
 const router = useRouter();
 
 const matchId = Number(route.params.id);
+const activeTeamTab = ref<"home" | "away">("home");
 
-onMounted(() => {
+onMounted(async () => {
   if (matchId) {
-    matchStore.fetchMatchById(matchId);
+    await Promise.all([
+      matchStore.fetchMatchById(matchId),
+      matchStore.fetchLineups(matchId),
+    ]);
   }
 });
 
@@ -377,6 +610,13 @@ const handleBack = () => {
 
 const handleEdit = () => {
   router.push(`/matches/${matchId}/edit`);
+};
+
+const handleManageLineup = (teamId: number) => {
+  router.push({
+    path: `/matches/${matchId}/lineup`,
+    query: { teamId },
+  });
 };
 
 const confirmDelete = async () => {
@@ -389,6 +629,26 @@ const confirmDelete = async () => {
     }
   }
 };
+
+const activeTeamId = computed(() => {
+  if (!matchStore.currentMatch) return null;
+  return activeTeamTab.value === "home"
+    ? matchStore.currentMatch.homeTeamId
+    : matchStore.currentMatch.awayTeamId;
+});
+
+const activeTeamLineup = computed<MatchLineup[]>(() => {
+  if (!activeTeamId.value) return [];
+  return matchStore.getLineupsByTeam(activeTeamId.value);
+});
+
+const startersList = computed(() => {
+  return activeTeamLineup.value.filter((p) => p.starter);
+});
+
+const substitutesList = computed(() => {
+  return activeTeamLineup.value.filter((p) => !p.starter);
+});
 
 const formatDate = (dateString: string): string => {
   try {
@@ -418,5 +678,16 @@ const getStatusBadgeClass = (status: MatchStatus): string => {
     FINISHED: "badge-finished",
   };
   return statusClasses[status] || "badge-default";
+};
+
+const formatPosition = (pos?: string): string => {
+  if (!pos) return "-";
+  const posMap: Record<string, string> = {
+    GOALKEEPER: "Portero",
+    DEFENDER: "Defensa",
+    MIDFIELDER: "Centrocampista",
+    FORWARD: "Delantero",
+  };
+  return posMap[pos] || pos;
 };
 </script>
