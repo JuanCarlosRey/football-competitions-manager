@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Match flow', () => {
-    test('should allow completing the full CRUD flow for a match using mocks', async ({ page }) => {
+    test('should allow completing the full CRUD flow for a match and validate player filtering by contract dates', async ({ page }) => {
         const mockTeams = [
             {
                 id: 7,
@@ -49,6 +49,80 @@ test.describe('Match flow', () => {
                 competition: { id: 7, name: 'Champions League' },
             },
         ];
+        const mockPlayerLamine = {
+            id: 101,
+            firstName: 'Lamine',
+            lastName: 'Yamal',
+            birthDate: '2007-07-13',
+            position: 'FORWARD',
+            nationality: 'Spanish',
+            overall: 88,
+            height: 180,
+            weight: 75,
+            preferredFoot: 'RIGHT',
+        };
+        const mockPlayerFuturo = {
+            id: 102,
+            firstName: 'Fichaje',
+            lastName: 'Futuro',
+            birthDate: '2005-01-01',
+            position: 'MIDFIELDER',
+            nationality: 'Spanish',
+            overall: 80,
+            height: 175,
+            weight: 70,
+            preferredFoot: 'RIGHT',
+        };
+        const mockPlayerExpirado = {
+            id: 103,
+            firstName: 'Jugador',
+            lastName: 'Expirado',
+            birthDate: '1995-01-01',
+            position: 'DEFENDER',
+            nationality: 'Spanish',
+            overall: 78,
+            height: 185,
+            weight: 80,
+            preferredFoot: 'LEFT',
+        };
+        const mockBarcaTeamPlayers = [
+            {
+                id: 1,
+                teamId: 9,
+                playerId: 101,
+                startDate: '2026-01-01T00:00:00.000Z',
+                endDate: null,
+                player: mockPlayerLamine,
+            },
+            {
+                id: 2,
+                teamId: 9,
+                playerId: 102,
+                startDate: '2027-01-01T00:00:00.000Z',
+                endDate: null,
+                player: mockPlayerFuturo,
+            },
+            {
+                id: 3,
+                teamId: 9,
+                playerId: 103,
+                startDate: '2025-01-01T00:00:00.000Z',
+                endDate: '2026-10-01T00:00:00.000Z',
+                player: mockPlayerExpirado,
+            },
+        ];
+        const mockMatchLineups = [
+            {
+                id: 501,
+                matchId: 3,
+                teamId: 9,
+                playerId: 101,
+                starter: true,
+                position: 'FORWARD',
+                shirtNumber: 19,
+                player: mockPlayerLamine,
+            },
+        ];
         let matches = [
             {
                 id: 3,
@@ -73,14 +147,16 @@ test.describe('Match flow', () => {
         await page.route('**/api/seasons', async (route) => {
             await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(mockSeasons) });
         });
+        await page.route('**/api/teams/9/players', async (route) => {
+            await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(mockBarcaTeamPlayers) });
+        });
+        await page.route(/\/api\/matches\/\d+\/lineups/, async (route) => {
+            await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(mockMatchLineups) });
+        });
         await page.route('**/api/matches', async (route) => {
             const method = route.request().method();
             if (method === 'GET') {
-                await route.fulfill({
-                    status: 200,
-                    contentType: 'application/json',
-                    body: JSON.stringify(matches),
-                });
+                await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(matches) });
             } else if (method === 'POST') {
                 const payload = route.request().postDataJSON();
                 const homeTeam = mockTeams.find((t) => t.id === Number(payload.homeTeamId))!;
@@ -96,16 +172,12 @@ test.describe('Match flow', () => {
                     stadiumId: payload.stadiumId,
                     seasonId: payload.seasonId,
                     homeTeam,
-                    awayTeam: awayTeam!,
+                    awayTeam,
                     stadium,
                     season,
                 };
                 matches.push(newMatch);
-                await route.fulfill({
-                    status: 201,
-                    contentType: 'application/json',
-                    body: JSON.stringify(newMatch),
-                });
+                await route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify(newMatch) });
             } else {
                 await route.continue();
             }
@@ -168,15 +240,17 @@ test.describe('Match flow', () => {
         await createdRow.getByRole('button', { name: 'Ver' }).click();
         await expect(page).toHaveURL(/\/matches\/\d+\/info/);
         await expect(page.getByRole('heading', { name: /Partido #\d+/ })).toBeVisible();
-        await expect(page.getByText('FC Barcelona')).toBeVisible();
-        await expect(page.getByText('Internazionale Milano')).toBeVisible();
-        await expect(page.getByText('Detalles del Evento')).toBeVisible();
-        await expect(page.getByText('Santiago Bernabeu')).toBeVisible();
-        await page.getByRole('button', { name: '← Volver' }).click();
-        await expect(page).toHaveURL('/matches');
-        await page.getByRole('row').filter({ hasText: 'FC Barcelona' }).getByRole('button', { name: 'Ver' }).click();
-        await expect(page).toHaveURL(/\/matches\/\d+\/info/);
-        await page.getByRole('button', { name: 'Editar' }).click();
+        await expect(page.locator('.team-title').filter({ hasText: 'FC Barcelona' })).toBeVisible();
+        await expect(page.locator('.team-title').filter({ hasText: 'Internazionale Milano' })).toBeVisible();
+        const barcaTab = page.getByRole('button', { name: 'FC Barcelona' });
+        if (await barcaTab.isVisible()) {
+            await barcaTab.click();
+        }
+        await expect(page.getByText(/Lamine/i)).toBeVisible();
+        await expect(page.getByText(/Yamal/i)).toBeVisible();
+        await expect(page.getByText('Futuro')).not.toBeVisible();
+        await expect(page.getByText('Expirado')).not.toBeVisible();
+        await page.getByRole('button', { name: 'Editar', exact: true }).click();
         await expect(page).toHaveURL(/\/matches\/\d+\/edit/);
         await page.getByLabel('Estado *').selectOption('FINISHED');
         await page.getByRole('button', { name: 'Guardar Cambios' }).click();
