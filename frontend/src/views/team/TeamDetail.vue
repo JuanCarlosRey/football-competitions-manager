@@ -466,7 +466,6 @@ onMounted(async () => {
     await teamStore.fetchTeamById(teamId);
     await teamStore.fetchTeamMatches(teamId);
   }
-  console.log(teamStore.currentTeam?.players);
 });
 
 const handleBack = () => {
