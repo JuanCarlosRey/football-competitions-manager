@@ -89,6 +89,52 @@ export const createMatchTeamStatsSchema = z
     });
 
 /**
+ * Schema for updating match team stats (todos los campos opcionales excepto teamId que no se actualiza)
+ */
+export const updateMatchTeamStatsSchema = z
+    .object({
+        possession: nonNegativeInt('possession').max(100, 'The "possession" field cannot exceed 100').optional(),
+        shots: nonNegativeInt('shots').optional(),
+        shotsOnTarget: nonNegativeInt('shotsOnTarget').optional(),
+        fouls: nonNegativeInt('fouls').optional(),
+        offsides: nonNegativeInt('offsides').optional(),
+        corners: nonNegativeInt('corners').optional(),
+        freeKicks: nonNegativeInt('freeKicks').optional(),
+        passes: nonNegativeInt('passes').optional(),
+        completedPasses: nonNegativeInt('completedPasses').optional(),
+        crosses: nonNegativeInt('crosses').optional(),
+        interceptions: nonNegativeInt('interceptions').optional(),
+        tackles: nonNegativeInt('tackles').optional(),
+        saves: nonNegativeInt('saves').optional(),
+        yellowCards: nonNegativeInt('yellowCards').optional(),
+        redCards: nonNegativeInt('redCards').optional(),
+    })
+    .superRefine((data, ctx) => {
+        if (
+            data.shotsOnTarget !== undefined &&
+            data.shots !== undefined &&
+            data.shotsOnTarget > data.shots
+        ) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: `The "shotsOnTarget" (${data.shotsOnTarget}) cannot be greater than "shots" (${data.shots})`,
+                path: ['shotsOnTarget'],
+            });
+        }
+        if (
+            data.completedPasses !== undefined &&
+            data.passes !== undefined &&
+            data.completedPasses > data.passes
+        ) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: `The "completedPasses" (${data.completedPasses}) cannot be greater than "passes" (${data.passes})`,
+                path: ['completedPasses'],
+            });
+        }
+    });
+
+/**
  * Helper function to validate if a team belongs to a match (for controller / service usage)
  */
 export const validateTeamBelongsToMatch = (
@@ -100,3 +146,4 @@ export const validateTeamBelongsToMatch = (
 
 export type MatchTeamStatsParamsDTO = z.infer<typeof matchTeamStatsParamsSchema>;
 export type CreateMatchTeamStatsDTO = z.infer<typeof createMatchTeamStatsSchema>;
+export type UpdateMatchTeamStatsDTO = z.infer<typeof updateMatchTeamStatsSchema>;

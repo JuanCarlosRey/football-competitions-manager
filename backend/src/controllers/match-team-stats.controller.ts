@@ -4,6 +4,7 @@ import * as matchTeamStatsService from '../services/match-team-stats.service.js'
 import {
     matchTeamStatsParamsSchema,
     createMatchTeamStatsSchema,
+    updateMatchTeamStatsSchema,
 } from '../schemas/match-team-stats.schema.js';
 
 export async function getStatsByMatch(req: Request, res: Response) {
@@ -55,7 +56,7 @@ export async function updateTeamStats(req: Request, res: Response) {
         if (!statId) {
             return res.status(400).json({ error: 'The "statId" parameter is required' });
         }
-        const validatedData = createMatchTeamStatsSchema.partial().parse(req.body);
+        const validatedData = updateMatchTeamStatsSchema.parse(req.body);
         const updatedStats = await matchTeamStatsService.updateTeamStats(
             matchId,
             statId,
