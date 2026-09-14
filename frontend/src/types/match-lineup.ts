@@ -3,12 +3,12 @@ import type { Team } from './team';
 import type { Player } from './player';
 
 /**
- * Representa una posición en el campo de juego.
+ * Represents a position on the playing field.
  */
 export type LineupPosition = 'GOALKEEPER' | 'DEFENDER' | 'MIDFIELDER' | 'FORWARD';
 
 /**
- * Representa una entrada individual en la alineación de un partido.
+ * Represents an individual entry in a match lineup.
  */
 export interface MatchLineup {
     id: number;
@@ -24,7 +24,7 @@ export interface MatchLineup {
 }
 
 /**
- * Representa la entrada individual de un jugador al registrar una alineación.
+ * Represents the individual player entry when registering a lineup.
  */
 export interface LineupPlayerInput {
     playerId: number;
@@ -34,7 +34,7 @@ export interface LineupPlayerInput {
 }
 
 /**
- * DTO para agregar la alineación completa de un equipo a un partido (POST /matches/:id/lineups).
+ * DTO for adding the full team lineup to a match.
  */
 export interface AddTeamLineupDTO {
     teamId: number;
@@ -42,7 +42,7 @@ export interface AddTeamLineupDTO {
 }
 
 /**
- * DTO para actualizar una entrada individual de la alineación (PUT /matches/:id/lineups/:lineupId).
+ * DTO for updating an individual lineup entry.
  */
 export interface UpdateLineupEntryDTO {
     starter?: boolean;

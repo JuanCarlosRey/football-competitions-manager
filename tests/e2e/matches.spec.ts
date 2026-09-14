@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Match flow', () => {
-    test('should allow completing the full CRUD flow for a match and validate player filtering by contract dates', async ({ page }) => {
+    test('should allow completing the full CRUD flow for a match and validate player filtering by contract dates, form view, and match team stats', async ({ page }) => {
         const mockTeams = [
             {
                 id: 7,
@@ -123,6 +123,34 @@ test.describe('Match flow', () => {
                 player: mockPlayerLamine,
             },
         ];
+        const mockMatchTeamStats = [
+            {
+                id: 1,
+                matchId: 3,
+                teamId: 9,
+                possession: 62,
+                shots: 14,
+                shotsOnTarget: 6,
+                fouls: 8,
+                yellowCards: 2,
+                redCards: 0,
+                corners: 5,
+                offsides: 1,
+            },
+            {
+                id: 2,
+                matchId: 3,
+                teamId: 8,
+                possession: 38,
+                shots: 6,
+                shotsOnTarget: 2,
+                fouls: 12,
+                yellowCards: 3,
+                redCards: 0,
+                corners: 2,
+                offsides: 3,
+            },
+        ];
         let matches = [
             {
                 id: 3,
@@ -153,6 +181,9 @@ test.describe('Match flow', () => {
         await page.route(/\/api\/matches\/\d+\/lineups/, async (route) => {
             await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(mockMatchLineups) });
         });
+        await page.route(/\/api\/matches\/\d+\/team-stats/, async (route) => {
+            await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(mockMatchTeamStats) });
+        });
         await page.route('**/api/matches', async (route) => {
             const method = route.request().method();
             if (method === 'GET') {
@@ -164,7 +195,7 @@ test.describe('Match flow', () => {
                 const stadium = mockStadiums.find((s) => s.id === Number(payload.stadiumId))!;
                 const season = mockSeasons.find((s) => s.id === Number(payload.seasonId))!;
                 const newMatch = {
-                    id: Date.now(),
+                    id: 1000,
                     dateTime: payload.dateTime,
                     status: payload.status,
                     homeTeamId: payload.homeTeamId,
@@ -250,8 +281,16 @@ test.describe('Match flow', () => {
         await expect(page.getByText(/Yamal/i)).toBeVisible();
         await expect(page.getByText('Futuro')).not.toBeVisible();
         await expect(page.getByText('Expirado')).not.toBeVisible();
+        const statsTab = page.getByRole('button', { name: 'Estadísticas', exact: true });
+        if (await statsTab.isVisible()) {
+            await statsTab.click();
+            await expect(page.getByText(/Posesión|Possession/i)).toBeVisible();
+            await expect(page.getByText('62%')).toBeVisible();
+            await expect(page.getByText('38%')).toBeVisible();
+        }
         await page.getByRole('button', { name: 'Editar', exact: true }).click();
         await expect(page).toHaveURL(/\/matches\/\d+\/edit/);
+        await expect(page.getByLabel('Estado *')).toHaveValue('SCHEDULED');
         await page.getByLabel('Estado *').selectOption('FINISHED');
         await page.getByRole('button', { name: 'Guardar Cambios' }).click();
         await expect(page).toHaveURL('/matches');
