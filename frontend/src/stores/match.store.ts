@@ -10,15 +10,21 @@ import type {
     AddTeamLineupDTO,
     UpdateLineupEntryDTO
 } from '../types/match-lineup';
+import type {
+    MatchTeamStats,
+    CreateMatchTeamStatsDTO,
+    UpdateMatchTeamStatsDTO
+} from '../types/match-team-stats';
 import { matchService } from '../services/match.service';
 
 /**
- * Pinia store for managing matches and match lineups.
+ * Pinia store for managing matches, match lineups, and match team statistics.
  */
 export const useMatchStore = defineStore('match', () => {
     const matches = ref<Match[]>([]);
     const currentMatch = ref<Match | null>(null);
     const currentLineups = ref<MatchLineup[]>([]);
+    const currentStats = ref<MatchTeamStats[]>([]);
     const isLoading = ref<boolean>(false);
     const error = ref<string | null>(null);
 
@@ -38,6 +44,10 @@ export const useMatchStore = defineStore('match', () => {
 
     const getLineupsByTeam = computed(() => {
         return (teamId: number) => currentLineups.value.filter((lineup) => lineup.teamId === teamId);
+    });
+
+    const getStatsByTeam = computed(() => {
+        return (teamId: number) => currentStats.value.find((stat) => stat.teamId === teamId);
     });
 
     async function fetchMatches() {
@@ -113,6 +123,7 @@ export const useMatchStore = defineStore('match', () => {
             if (currentMatch.value?.id === id) {
                 currentMatch.value = null;
                 currentLineups.value = [];
+                currentStats.value = [];
             }
         } catch (err: unknown) {
             error.value = (err as { response?: { data?: { error?: string } } }).response?.data?.error || 'Error al eliminar el partido';
@@ -189,6 +200,74 @@ export const useMatchStore = defineStore('match', () => {
         }
     }
 
+    async function fetchStats(matchId: number) {
+        isLoading.value = true;
+        error.value = null;
+        try {
+            currentStats.value = await matchService.getStats(matchId);
+        } catch (err: unknown) {
+            error.value = (err as { response?: { data?: { error?: string } } }).response?.data?.error || 'Error al obtener las estadísticas del partido';
+            console.error(err);
+        } finally {
+            isLoading.value = false;
+        }
+    }
+
+    async function addTeamStats(matchId: number, data: CreateMatchTeamStatsDTO) {
+        isLoading.value = true;
+        error.value = null;
+        try {
+            const newStats = await matchService.addTeamStats(matchId, data);
+            const index = currentStats.value.findIndex((s) => s.teamId === data.teamId);
+            if (index !== -1) {
+                currentStats.value[index] = newStats;
+            } else {
+                currentStats.value.push(newStats);
+            }
+            return newStats;
+        } catch (err: unknown) {
+            error.value = (err as { response?: { data?: { error?: string } } }).response?.data?.error || 'Error al guardar las estadísticas del equipo';
+            console.error(err);
+            throw err;
+        } finally {
+            isLoading.value = false;
+        }
+    }
+
+    async function updateTeamStats(matchId: number, statId: number, data: UpdateMatchTeamStatsDTO) {
+        isLoading.value = true;
+        error.value = null;
+        try {
+            const updatedStats = await matchService.updateTeamStats(matchId, statId, data);
+            const index = currentStats.value.findIndex((s) => s.id === statId);
+            if (index !== -1) {
+                currentStats.value[index] = updatedStats;
+            }
+            return updatedStats;
+        } catch (err: unknown) {
+            error.value = (err as { response?: { data?: { error?: string } } }).response?.data?.error || 'Error al actualizar las estadísticas del equipo';
+            console.error(err);
+            throw err;
+        } finally {
+            isLoading.value = false;
+        }
+    }
+
+    async function removeTeamStats(matchId: number, statId: number) {
+        isLoading.value = true;
+        error.value = null;
+        try {
+            await matchService.removeTeamStats(matchId, statId);
+            currentStats.value = currentStats.value.filter((s) => s.id !== statId);
+        } catch (err: unknown) {
+            error.value = (err as { response?: { data?: { error?: string } } }).response?.data?.error || 'Error al eliminar las estadísticas del equipo';
+            console.error(err);
+            throw err;
+        } finally {
+            isLoading.value = false;
+        }
+    }
+
     function clearError() {
         error.value = null;
     }
@@ -197,6 +276,7 @@ export const useMatchStore = defineStore('match', () => {
         matches,
         currentMatch,
         currentLineups,
+        currentStats,
         isLoading,
         error,
         totalMatches,
@@ -204,6 +284,7 @@ export const useMatchStore = defineStore('match', () => {
         starters,
         substitutes,
         getLineupsByTeam,
+        getStatsByTeam,
         fetchMatches,
         fetchMatchById,
         createMatch,
@@ -213,6 +294,10 @@ export const useMatchStore = defineStore('match', () => {
         addTeamLineup,
         updateLineupEntry,
         removeLineupEntry,
+        fetchStats,
+        addTeamStats,
+        updateTeamStats,
+        removeTeamStats,
         clearError,
     };
 });
