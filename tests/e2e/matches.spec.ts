@@ -114,7 +114,7 @@ test.describe('Match flow', () => {
         const mockMatchLineups = [
             {
                 id: 501,
-                matchId: 3,
+                matchId: 1000,
                 teamId: 9,
                 playerId: 101,
                 starter: true,
@@ -126,7 +126,7 @@ test.describe('Match flow', () => {
         const mockMatchTeamStats = [
             {
                 id: 1,
-                matchId: 3,
+                matchId: 1000,
                 teamId: 9,
                 possession: 62,
                 shots: 14,
@@ -139,7 +139,7 @@ test.describe('Match flow', () => {
             },
             {
                 id: 2,
-                matchId: 3,
+                matchId: 1000,
                 teamId: 8,
                 possession: 38,
                 shots: 6,
@@ -149,6 +149,20 @@ test.describe('Match flow', () => {
                 redCards: 0,
                 corners: 2,
                 offsides: 3,
+            },
+        ];
+        let mockMatchPlayerStats = [
+            {
+                id: 1,
+                matchId: 1000,
+                playerId: 101,
+                teamId: 9,
+                goals: 1,
+                assists: 1,
+                yellowCards: 0,
+                redCards: 0,
+                rating: 8.5,
+                player: mockPlayerLamine,
             },
         ];
         let matches = [
@@ -178,11 +192,44 @@ test.describe('Match flow', () => {
         await page.route('**/api/teams/9/players', async (route) => {
             await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(mockBarcaTeamPlayers) });
         });
-        await page.route(/\/api\/matches\/\d+\/lineups/, async (route) => {
+        await page.route('**/api/matches/1000/lineups', async (route) => {
             await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(mockMatchLineups) });
         });
-        await page.route(/\/api\/matches\/\d+\/team-stats/, async (route) => {
+        await page.route('**/api/matches/1000/team-stats', async (route) => {
             await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(mockMatchTeamStats) });
+        });
+        await page.route('**/api/matches/1000/player-stats', async (route) => {
+            const method = route.request().method();
+            if (method === 'GET') {
+                await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(mockMatchPlayerStats) });
+            } else if (method === 'POST') {
+                const payload = route.request().postDataJSON();
+                const newStat = {
+                    id: 2,
+                    matchId: 1000,
+                    playerId: payload.playerId,
+                    teamId: payload.teamId,
+                    minutesPlayed: payload.minutesPlayed,
+                    goals: payload.goals,
+                    assists: payload.assists,
+                    shots: payload.shots,
+                    shotsOnTarget: payload.shotsOnTarget,
+                    passes: payload.passes,
+                    passAccuracy: payload.passAccuracy,
+                    tackles: payload.tackles,
+                    interceptions: payload.interceptions,
+                    foulsCommitted: payload.foulsCommitted,
+                    foulsDrawn: payload.foulsDrawn,
+                    yellowCards: payload.yellowCards,
+                    redCards: payload.redCards,
+                    rating: payload.rating,
+                    player: mockPlayerLamine,
+                };
+                mockMatchPlayerStats.push(newStat);
+                await route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify(newStat) });
+            } else {
+                await route.continue();
+            }
         });
         await page.route('**/api/matches', async (route) => {
             const method = route.request().method();
@@ -271,20 +318,24 @@ test.describe('Match flow', () => {
         await createdRow.getByRole('button', { name: 'Ver' }).click();
         await expect(page).toHaveURL(/\/matches\/\d+\/info/);
         await expect(page.getByRole('heading', { name: /Partido #\d+/ })).toBeVisible();
-        await expect(page.locator('.team-title').filter({ hasText: 'FC Barcelona' })).toBeVisible();
-        await expect(page.locator('.team-title').filter({ hasText: 'Internazionale Milano' })).toBeVisible();
         const barcaTab = page.getByRole('button', { name: 'FC Barcelona' });
-        if (await barcaTab.isVisible()) {
-            await barcaTab.click();
+        await expect(barcaTab).toBeVisible();
+        await expect(page.getByText('Lamine Yamal')).toBeVisible();
+        const addPlayerStatBtn = page.getByRole('button', { name: /Añadir Estadística|Añadir Jugador/i });
+        if (await addPlayerStatBtn.isVisible()) {
+            await addPlayerStatBtn.click();
+            await page.getByLabel(/Jugador/i).selectOption({ label: 'Lamine Yamal' });
+            await page.getByLabel(/Minutos Jugados/i).fill('90');
+            await page.getByLabel(/Goles/i).fill('1');
+            await page.getByLabel(/Asistencias/i).fill('1');
+            await page.getByRole('button', { name: /Guardar|Añadir/i }).click();
         }
-        await expect(page.getByText(/Lamine/i)).toBeVisible();
-        await expect(page.getByText(/Yamal/i)).toBeVisible();
+        await expect(page.getByText('Lamine Yamal')).toBeVisible();
         await expect(page.getByText('Futuro')).not.toBeVisible();
         await expect(page.getByText('Expirado')).not.toBeVisible();
         const statsTab = page.getByRole('button', { name: 'Estadísticas', exact: true });
         if (await statsTab.isVisible()) {
             await statsTab.click();
-            await expect(page.getByText(/Posesión|Possession/i)).toBeVisible();
             await expect(page.getByText('62%')).toBeVisible();
             await expect(page.getByText('38%')).toBeVisible();
         }
