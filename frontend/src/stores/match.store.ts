@@ -16,15 +16,17 @@ import type {
     UpdateMatchTeamStatsDTO
 } from '../types/match-team-stats';
 import { matchService } from '../services/match.service';
+import type { MatchPlayerStats, CreateMatchPlayerStatsDTO, UpdateMatchPlayerStatsDTO } from '../types/match-player-stats';
 
 /**
- * Pinia store for managing matches, match lineups, and match team statistics.
+ * Pinia store for managing matches, match lineups, match team statistics, and match player statistics.
  */
 export const useMatchStore = defineStore('match', () => {
     const matches = ref<Match[]>([]);
     const currentMatch = ref<Match | null>(null);
     const currentLineups = ref<MatchLineup[]>([]);
     const currentStats = ref<MatchTeamStats[]>([]);
+    const currentPlayerStats = ref<MatchPlayerStats[]>([]);
     const isLoading = ref<boolean>(false);
     const error = ref<string | null>(null);
 
@@ -48,6 +50,19 @@ export const useMatchStore = defineStore('match', () => {
 
     const getStatsByTeam = computed(() => {
         return (teamId: number) => currentStats.value.find((stat) => stat.teamId === teamId);
+    });
+
+    const getPlayerStatsByPlayer = computed(() => {
+        return (playerId: number) => currentPlayerStats.value.find((stat) => stat.playerId === playerId);
+    });
+
+    const getPlayerStatsByTeam = computed(() => {
+        return (teamId: number) => {
+            const teamPlayerIds = currentLineups.value
+                .filter((lineup) => lineup.teamId === teamId)
+                .map((lineup) => lineup.playerId);
+            return currentPlayerStats.value.filter((stat) => teamPlayerIds.includes(stat.playerId));
+        };
     });
 
     async function fetchMatches() {
@@ -124,6 +139,7 @@ export const useMatchStore = defineStore('match', () => {
                 currentMatch.value = null;
                 currentLineups.value = [];
                 currentStats.value = [];
+                currentPlayerStats.value = [];
             }
         } catch (err: unknown) {
             error.value = (err as { response?: { data?: { error?: string } } }).response?.data?.error || 'Error al eliminar el partido';
@@ -268,6 +284,74 @@ export const useMatchStore = defineStore('match', () => {
         }
     }
 
+    async function fetchPlayerStats(matchId: number) {
+        isLoading.value = true;
+        error.value = null;
+        try {
+            currentPlayerStats.value = await matchService.getPlayerStats(matchId);
+        } catch (err: unknown) {
+            error.value = (err as { response?: { data?: { error?: string } } }).response?.data?.error || 'Error al obtener las estadísticas de los jugadores';
+            console.error(err);
+        } finally {
+            isLoading.value = false;
+        }
+    }
+
+    async function addPlayerStats(matchId: number, data: CreateMatchPlayerStatsDTO) {
+        isLoading.value = true;
+        error.value = null;
+        try {
+            const newStats = await matchService.addPlayerStats(matchId, data);
+            const index = currentPlayerStats.value.findIndex((s) => s.playerId === data.playerId);
+            if (index !== -1) {
+                currentPlayerStats.value[index] = newStats;
+            } else {
+                currentPlayerStats.value.push(newStats);
+            }
+            return newStats;
+        } catch (err: unknown) {
+            error.value = (err as { response?: { data?: { error?: string } } }).response?.data?.error || 'Error al guardar las estadísticas del jugador';
+            console.error(err);
+            throw err;
+        } finally {
+            isLoading.value = false;
+        }
+    }
+
+    async function updatePlayerStats(matchId: number, statId: number, data: UpdateMatchPlayerStatsDTO) {
+        isLoading.value = true;
+        error.value = null;
+        try {
+            const updatedStats = await matchService.updatePlayerStats(matchId, statId, data);
+            const index = currentPlayerStats.value.findIndex((s) => s.id === statId);
+            if (index !== -1) {
+                currentPlayerStats.value[index] = updatedStats;
+            }
+            return updatedStats;
+        } catch (err: unknown) {
+            error.value = (err as { response?: { data?: { error?: string } } }).response?.data?.error || 'Error al actualizar las estadísticas del jugador';
+            console.error(err);
+            throw err;
+        } finally {
+            isLoading.value = false;
+        }
+    }
+
+    async function removePlayerStats(matchId: number, statId: number) {
+        isLoading.value = true;
+        error.value = null;
+        try {
+            await matchService.removePlayerStats(matchId, statId);
+            currentPlayerStats.value = currentPlayerStats.value.filter((s) => s.id !== statId);
+        } catch (err: unknown) {
+            error.value = (err as { response?: { data?: { error?: string } } }).response?.data?.error || 'Error al eliminar las estadísticas del jugador';
+            console.error(err);
+            throw err;
+        } finally {
+            isLoading.value = false;
+        }
+    }
+
     function clearError() {
         error.value = null;
     }
@@ -277,6 +361,7 @@ export const useMatchStore = defineStore('match', () => {
         currentMatch,
         currentLineups,
         currentStats,
+        currentPlayerStats,
         isLoading,
         error,
         totalMatches,
@@ -285,6 +370,8 @@ export const useMatchStore = defineStore('match', () => {
         substitutes,
         getLineupsByTeam,
         getStatsByTeam,
+        getPlayerStatsByPlayer,
+        getPlayerStatsByTeam,
         fetchMatches,
         fetchMatchById,
         createMatch,
@@ -298,6 +385,10 @@ export const useMatchStore = defineStore('match', () => {
         addTeamStats,
         updateTeamStats,
         removeTeamStats,
+        fetchPlayerStats,
+        addPlayerStats,
+        updatePlayerStats,
+        removePlayerStats,
         clearError,
     };
 });

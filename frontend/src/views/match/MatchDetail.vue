@@ -43,20 +43,7 @@
             <span class="team-label">Local</span>
           </div>
           <div class="score-display">
-            <template
-              v-if="
-                matchStore.currentMatch.status === 'FINISHED' ||
-                matchStore.currentMatch.status === 'LIVE'
-              "
-            >
-              <!-- <span class="score">{{ matchStore.currentMatch.homeScore ?? 0 }}</span>
-              <span class="score-divider">-</span>
-              <span class="score">{{ matchStore.currentMatch.awayScore ?? 0 }}</span> -->
-              <span class="vs-big">VS</span>
-            </template>
-            <template v-else>
-              <span class="vs-big">VS</span>
-            </template>
+            <span class="vs-big">VS</span>
           </div>
           <div class="team away-team">
             <span class="team-title">{{
@@ -67,9 +54,25 @@
           </div>
         </div>
       </div>
+      <div class="team-tabs">
+        <button
+          class="tab-btn"
+          :class="{ active: activeTeamTab === 'home' }"
+          @click="activeTeamTab = 'home'"
+        >
+          {{ matchStore.currentMatch.homeTeam?.name || "Local" }}
+        </button>
+        <button
+          class="tab-btn"
+          :class="{ active: activeTeamTab === 'away' }"
+          @click="activeTeamTab = 'away'"
+        >
+          {{ matchStore.currentMatch.awayTeam?.name || "Visitante" }}
+        </button>
+      </div>
       <div class="stats-card">
         <div class="card-header">
-          <h2>Estadísticas del Partido</h2>
+          <h2>Estadísticas del Equipo</h2>
           <div class="header-actions" v-if="activeTeamId">
             <button
               class="btn btn-primary btn-sm"
@@ -79,25 +82,9 @@
             </button>
           </div>
         </div>
-        <div class="team-tabs">
-          <button
-            class="tab-btn"
-            :class="{ active: activeTeamTab === 'home' }"
-            @click="activeTeamTab = 'home'"
-          >
-            {{ matchStore.currentMatch.homeTeam?.name || "Local" }}
-          </button>
-          <button
-            class="tab-btn"
-            :class="{ active: activeTeamTab === 'away' }"
-            @click="activeTeamTab = 'away'"
-          >
-            {{ matchStore.currentMatch.awayTeam?.name || "Visitante" }}
-          </button>
-        </div>
         <div class="stats-content">
           <div v-if="!activeTeamStats" class="empty-state-box">
-            <p>No hay estadísticas registradas para este equipo en este partido.</p>
+            <p>No hay estadísticas de equipo registradas para este partido.</p>
             <button
               v-if="activeTeamId"
               class="btn btn-secondary btn-sm"
@@ -128,38 +115,6 @@
               <span class="stat-value">{{ activeTeamStats.fouls ?? 0 }}</span>
             </div>
             <div class="stat-item">
-              <span class="stat-label">Fueras de Juego</span>
-              <span class="stat-value">{{ activeTeamStats.offsides ?? 0 }}</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-label">Tiros Libres</span>
-              <span class="stat-value">{{ activeTeamStats.freeKicks ?? 0 }}</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-label">Pases Totales</span>
-              <span class="stat-value">{{ activeTeamStats.passes ?? 0 }}</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-label">Pases Completados</span>
-              <span class="stat-value">{{ activeTeamStats.completedPasses ?? 0 }}</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-label">Centros</span>
-              <span class="stat-value">{{ activeTeamStats.crosses ?? 0 }}</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-label">Intercepciones</span>
-              <span class="stat-value">{{ activeTeamStats.interceptions ?? 0 }}</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-label">Entradas (Tackles)</span>
-              <span class="stat-value">{{ activeTeamStats.tackles ?? 0 }}</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-label">Paradas</span>
-              <span class="stat-value">{{ activeTeamStats.saves ?? 0 }}</span>
-            </div>
-            <div class="stat-item">
               <span class="stat-label">Tarjetas Amarillas</span>
               <span class="stat-value">{{ activeTeamStats.yellowCards ?? 0 }}</span>
             </div>
@@ -168,6 +123,77 @@
               <span class="stat-value">{{ activeTeamStats.redCards ?? 0 }}</span>
             </div>
           </div>
+        </div>
+      </div>
+      <div class="player-stats-card">
+        <div class="card-header">
+          <h2>Estadísticas de Jugadores</h2>
+          <button
+            v-if="activeTeamId"
+            class="btn btn-primary btn-sm"
+            @click="handleManagePlayerStats(activeTeamId)"
+          >
+            + Registrar / Editar Jugador
+          </button>
+        </div>
+        <div v-if="activeTeamPlayerStats.length === 0" class="empty-state-box">
+          <p>No hay estadísticas de jugadores registradas para este equipo.</p>
+          <button
+            v-if="activeTeamId"
+            class="btn btn-secondary btn-sm"
+            @click="handleManagePlayerStats(activeTeamId)"
+          >
+            Registrar Estadísticas de Jugador
+          </button>
+        </div>
+        <div v-else class="table-wrapper">
+          <table class="player-stats-table">
+            <thead>
+              <tr>
+                <th>Jugador</th>
+                <th class="text-center">Goles</th>
+                <th class="text-center">Asist.</th>
+                <th class="text-center">Goles Enc.</th>
+                <th class="text-center">T. Amarilla</th>
+                <th class="text-center">T. Roja</th>
+                <th class="text-center">Valoración</th>
+                <th class="text-right">Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="stat in activeTeamPlayerStats" :key="stat.id">
+                <td class="font-bold">
+                  {{ getPlayerName(stat) }}
+                </td>
+                <td class="text-center">{{ stat.goals ?? 0 }}</td>
+                <td class="text-center">{{ stat.assists ?? 0 }}</td>
+                <td class="text-center">{{ stat.goalsConceded ?? 0 }}</td>
+                <td class="text-center">
+                  <span v-if="stat.yellowCards" class="badge-card card-yellow">
+                    {{ stat.yellowCards }}
+                  </span>
+                  <span v-else>0</span>
+                </td>
+                <td class="text-center">
+                  <span v-if="stat.redCards" class="badge-card card-red">
+                    {{ stat.redCards }}
+                  </span>
+                  <span v-else>0</span>
+                </td>
+                <td class="text-center font-bold highlight-rating">
+                  {{ stat.rating != null ? stat.rating.toFixed(1) : "-" }}
+                </td>
+                <td class="text-right">
+                  <button
+                    class="btn btn-link btn-sm"
+                    @click="handleEditPlayerStat(stat.playerId)"
+                  >
+                    Editar
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
       <div class="lineups-card">
@@ -209,7 +235,9 @@
                   <tbody>
                     <tr v-for="player in startersList" :key="player.id">
                       <td class="col-num font-bold">{{ player.shirtNumber ?? "-" }}</td>
-                      <td>{{ player.player?.firstName }} {{ player.player?.lastName }}</td>
+                      <td>
+                        {{ player.player?.firstName }} {{ player.player?.lastName }}
+                      </td>
                       <td>
                         <span class="position-badge">{{
                           formatPosition(player.position ?? undefined)
@@ -239,7 +267,9 @@
                   <tbody>
                     <tr v-for="player in substitutesList" :key="player.id">
                       <td class="col-num font-bold">{{ player.shirtNumber ?? "-" }}</td>
-                      <td>{{ player.player?.firstName }} {{ player.player?.lastName }}</td>
+                      <td>
+                        {{ player.player?.firstName }} {{ player.player?.lastName }}
+                      </td>
                       <td>
                         <span class="position-badge">{{
                           formatPosition(player.position ?? undefined)
@@ -378,39 +408,58 @@
   padding: 0 1.5rem;
 }
 
-.score {
-  font-size: 2.25rem;
-  font-weight: 800;
-  color: #1d4ed8;
-}
-
-.score-divider {
-  font-size: 1.5rem;
-  color: #9ca3af;
-}
-
 .vs-big {
   font-size: 1.5rem;
   font-weight: 800;
   color: #9ca3af;
 }
 
-/* Tarjeta de Estadísticas */
-.stats-card {
+/* Pestanias compartidas de Equipo */
+.team-tabs {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.tab-btn {
+  padding: 0.625rem 1.25rem;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+  margin-bottom: -2px;
+  transition: all 0.2s;
+}
+
+.tab-btn.active {
+  color: #2563eb;
+  border-bottom-color: #2563eb;
+}
+
+/* Tarjetas de Contenido General */
+.stats-card,
+.player-stats-card,
+.lineups-card,
+.info-card {
   background: #ffffff;
   border-radius: 8px;
   padding: 1.5rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.card-header {
+.card-header,
+.lineups-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
 }
 
-.card-header h2 {
+.card-header h2,
+.lineups-header h2,
+.info-card h2 {
   font-size: 1.25rem;
   color: #111827;
   margin: 0;
@@ -449,7 +498,8 @@
   color: #1f2937;
 }
 
-.empty-state-box {
+.empty-state-box,
+.empty-lineup {
   text-align: center;
   padding: 2rem 1rem;
   background-color: #f9fafb;
@@ -461,64 +511,50 @@
   gap: 1rem;
 }
 
-/* Pestanias compartidas entre Alineaciones y Estadisticas */
-.team-tabs {
-  display: flex;
-  gap: 0.5rem;
-  border-bottom: 2px solid #f3f4f6;
-  margin-bottom: 1.25rem;
+/* Tabla de Estadísticas de Jugadores */
+.player-stats-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
 }
 
-.tab-btn {
-  padding: 0.625rem 1.25rem;
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
+.player-stats-table th,
+.player-stats-table td {
+  padding: 0.625rem 0.75rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.player-stats-table th {
+  background-color: #f9fafb;
+  color: #4b5563;
   font-weight: 600;
-  color: #6b7280;
-  cursor: pointer;
-  margin-bottom: -2px;
-  transition: all 0.2s;
+  text-align: left;
 }
 
-.tab-btn.active {
+.badge-card {
+  display: inline-block;
+  padding: 0.125rem 0.375rem;
+  border-radius: 3px;
+  font-weight: 700;
+  font-size: 0.75rem;
+}
+
+.card-yellow {
+  background-color: #fef08a;
+  color: #854d0e;
+}
+
+.card-red {
+  background-color: #fca5a5;
+  color: #991b1b;
+}
+
+.highlight-rating {
   color: #2563eb;
-  border-bottom-color: #2563eb;
 }
 
 /* Estilos de Alineaciones */
-.lineups-card {
-  background: #ffffff;
-  border-radius: 8px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.lineups-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.25rem;
-}
-
-.lineups-header h2 {
-  font-size: 1.25rem;
-  color: #111827;
-  margin: 0;
-}
-
-.empty-lineup {
-  text-align: center;
-  padding: 2.5rem 1rem;
-  background-color: #f9fafb;
-  border-radius: 6px;
-  color: #6b7280;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-}
-
 .lineup-tables-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -570,27 +606,6 @@
   font-size: 0.75rem;
 }
 
-.text-muted {
-  color: #9ca3af;
-}
-
-.text-center {
-  text-align: center;
-}
-
-.info-card {
-  background: #ffffff;
-  border-radius: 8px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.info-card h2 {
-  font-size: 1.25rem;
-  color: #111827;
-  margin-bottom: 1rem;
-}
-
 .info-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -615,6 +630,18 @@
 
 .font-bold {
   font-weight: 600;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-muted {
+  color: #9ca3af;
 }
 
 .actions {
@@ -653,6 +680,13 @@
 }
 .btn-danger:hover {
   background-color: #dc2626;
+}
+
+.btn-link {
+  background: none;
+  color: #2563eb;
+  padding: 0;
+  text-decoration: underline;
 }
 
 .btn-sm {
@@ -742,6 +776,7 @@ import { useRoute, useRouter } from "vue-router";
 import { useMatchStore } from "../../stores/match.store";
 import type { MatchStatus } from "../../types/match";
 import type { MatchLineup } from "../../types/match-lineup";
+import type { MatchPlayerStats } from "../../types/match-player-stats";
 
 const matchStore = useMatchStore();
 const route = useRoute();
@@ -756,6 +791,7 @@ onMounted(async () => {
       matchStore.fetchMatchById(matchId),
       matchStore.fetchLineups(matchId),
       matchStore.fetchStats(matchId),
+      matchStore.fetchPlayerStats(matchId),
     ]);
   }
 });
@@ -779,6 +815,21 @@ const handleManageStats = (teamId: number) => {
   router.push({
     path: `/matches/${matchId}/stats`,
     query: { teamId },
+  });
+};
+
+const handleManagePlayerStats = (teamId: number) => {
+  router.push({
+    path: `/matches/${matchId}/player-stats`,
+    query: { teamId },
+  });
+};
+
+const handleEditPlayerStat = (playerId: number) => {
+  if (!activeTeamId.value) return;
+  router.push({
+    path: `/matches/${matchId}/player-stats`,
+    query: { teamId: activeTeamId.value, playerId },
   });
 };
 
@@ -810,6 +861,11 @@ const activeTeamStats = computed(() => {
   return matchStore.getStatsByTeam(activeTeamId.value);
 });
 
+const activeTeamPlayerStats = computed<MatchPlayerStats[]>(() => {
+  if (!activeTeamId.value) return [];
+  return matchStore.getPlayerStatsByTeam(activeTeamId.value);
+});
+
 const startersList = computed(() => {
   return activeTeamLineup.value.filter((p) => p.starter);
 });
@@ -817,6 +873,17 @@ const startersList = computed(() => {
 const substitutesList = computed(() => {
   return activeTeamLineup.value.filter((p) => !p.starter);
 });
+
+const getPlayerName = (stat: MatchPlayerStats): string => {
+  if (stat.player) {
+    return `${stat.player.firstName} ${stat.player.lastName}`;
+  }
+  const lineup = activeTeamLineup.value.find((l) => l.playerId === stat.playerId);
+  if (lineup?.player) {
+    return `${lineup.player.firstName} ${lineup.player.lastName}`;
+  }
+  return `Jugador #${stat.playerId}`;
+};
 
 const formatDate = (dateString: string): string => {
   try {

@@ -9,6 +9,7 @@ import type {
     AddTeamLineupDTO,
     UpdateLineupEntryDTO
 } from '../types/match-lineup';
+import type { CreateMatchPlayerStatsDTO, MatchPlayerStats, UpdateMatchPlayerStatsDTO } from '../types/match-player-stats';
 import type {
     MatchTeamStats,
     CreateMatchTeamStatsDTO,
@@ -16,9 +17,9 @@ import type {
 } from '../types/match-team-stats';
 
 /**
- * Service for managing matches, match lineups, and match team statistics.
+ * Service for managing matches, match lineups, match team statistics, and match player statistics.
  * Provides methods to interact with the backend API for CRUD operations on matches,
- * as well as managing lineups and team statistics for specific matches.
+ * as well as managing lineups, team statistics, and player statistics for specific matches.
  */
 export const matchService = {
 
@@ -165,5 +166,58 @@ export const matchService = {
      */
     async removeTeamStats(matchId: number, statId: number): Promise<void> {
         await apiClient.delete(`/matches/${matchId}/statistics/${statId}`);
+    },
+
+    /**
+     * Retrieves all player statistics for a specific match.
+     * 
+     * @param matchId The ID of the match.
+     * @returns A promise resolving to an array of MatchPlayerStats objects.
+     */
+    async getPlayerStats(matchId: number): Promise<MatchPlayerStats[]> {
+        const response = await apiClient.get<MatchPlayerStats[]>(`/matches/${matchId}/player-statistics`);
+        return response.data;
+    },
+
+    /**
+     * Adds individual player statistics to a match.
+     * 
+     * @param matchId The ID of the match.
+     * @param data The player statistics payload.
+     * @returns A promise resolving to the created MatchPlayerStats object.
+     */
+    async addPlayerStats(matchId: number, data: CreateMatchPlayerStatsDTO): Promise<MatchPlayerStats> {
+        const response = await apiClient.post<MatchPlayerStats>(`/matches/${matchId}/player-statistics`, data);
+        return response.data;
+    },
+
+    /**
+     * Updates a player's statistics entry for a match.
+     * 
+     * @param matchId The ID of the match.
+     * @param statId The ID of the player statistics entry to update.
+     * @param data Partial player statistics properties.
+     * @returns A promise resolving to the updated MatchPlayerStats object.
+     */
+    async updatePlayerStats(
+        matchId: number,
+        statId: number,
+        data: UpdateMatchPlayerStatsDTO
+    ): Promise<MatchPlayerStats> {
+        const response = await apiClient.put<MatchPlayerStats>(
+            `/matches/${matchId}/player-statistics/${statId}`,
+            data
+        );
+        return response.data;
+    },
+
+    /**
+     * Removes a player's statistics entry from a match.
+     * 
+     * @param matchId The ID of the match.
+     * @param statId The ID of the player statistics entry to delete.
+     */
+    async removePlayerStats(matchId: number, statId: number): Promise<void> {
+        await apiClient.delete(`/matches/${matchId}/player-statistics/${statId}`);
     },
 };
