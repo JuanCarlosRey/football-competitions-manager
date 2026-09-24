@@ -19,6 +19,7 @@ import MatchForm from "../views/match/MatchForm.vue";
 import MatchDetail from "../views/match/MatchDetail.vue";
 import MatchLineupForm from "../views/match/MatchLineupForm.vue";
 import MatchTeamStatsForm from "../views/match/MatchTeamStatsForm.vue";
+import MatchPlayerStatsForm from "../views/match/MatchPlayerStatsForm.vue";
 import PlayerView from "../views/player/PlayerView.vue";
 import PlayerForm from "../views/player/PlayerForm.vue";
 import PlayerDetail from "../views/player/PlayerDetail.vue";
@@ -69,7 +70,7 @@ const router = createRouter({
             name: "organization-edit",
             component: OrganizationForm,
         },
-                {
+        {
             path: "/organizations/:id/info",
             name: "organization-info",
             component: OrganizationDetail,
@@ -163,6 +164,11 @@ const router = createRouter({
             path: "/matches/:id/stats",
             name: "match-team-stats-form",
             component: MatchTeamStatsForm
+        },
+        {
+            path: "/matches/:id/player-stats",
+            name: "match-player-stats-form",
+            component: MatchPlayerStatsForm,
         },
         {
             path: "/players",
