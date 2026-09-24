@@ -10,26 +10,21 @@
         <button class="btn btn-danger" @click="confirmDelete">Eliminar</button>
       </div>
     </header>
-
     <div v-if="matchStore.error" class="alert alert-danger">
       <span>{{ matchStore.error }}</span>
       <button class="btn-close" @click="matchStore.clearError()">✕</button>
     </div>
-
     <div v-if="matchStore.isLoading" class="loading-state">
       <div class="spinner"></div>
       <p>Cargando detalles del partido...</p>
     </div>
-
     <div
       v-else-if="!matchStore.isLoading && !matchStore.currentMatch"
       class="empty-state"
     >
       <p>No se encontró la información de este partido.</p>
     </div>
-
     <div v-else-if="matchStore.currentMatch" class="detail-content">
-      <!-- Marcador / Scoreboard -->
       <div class="scoreboard-card">
         <div class="status-header">
           <span :class="['badge', getStatusBadgeClass(matchStore.currentMatch.status)]">
@@ -59,8 +54,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Pestanias compartidas de Equipo -->
       <div class="team-tabs">
         <button
           class="tab-btn"
@@ -77,8 +70,6 @@
           {{ matchStore.currentMatch.awayTeam?.name || "Visitante" }}
         </button>
       </div>
-
-      <!-- Estadísticas Generales del Equipo -->
       <div class="stats-card">
         <div class="card-header">
           <h2>Estadísticas del Equipo</h2>
@@ -134,8 +125,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Estadísticas Individuales de Jugadores -->
       <div class="player-stats-card">
         <div class="card-header">
           <h2>Estadísticas de Jugadores</h2>
@@ -147,7 +136,6 @@
             + Registrar / Editar Jugador
           </button>
         </div>
-
         <div v-if="activeTeamPlayerStats.length === 0" class="empty-state-box">
           <p>No hay estadísticas de jugadores registradas para este equipo.</p>
           <button
@@ -158,7 +146,6 @@
             Registrar Estadísticas de Jugador
           </button>
         </div>
-
         <div v-else class="table-wrapper">
           <table class="player-stats-table">
             <thead>
@@ -209,8 +196,6 @@
           </table>
         </div>
       </div>
-
-      <!-- Alineaciones -->
       <div class="lineups-card">
         <div class="lineups-header">
           <h2>Alineaciones</h2>
@@ -303,8 +288,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Detalles del Evento -->
       <div class="info-card">
         <h2>Detalles del Evento</h2>
         <div class="info-grid">
